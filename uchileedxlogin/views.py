@@ -201,7 +201,7 @@ class EdxLoginCallback(View):
         4. return first_name[0] + "_" first_name[1..N][0..N] + "_" + last_name[1..N][0..N]
         5. return first_name[0] + "_" + last_name[0] + N
         """
-        aux_last_name = user_data['apellidoPaterno'] + " " + user_data['apellidoMaterno']
+        aux_last_name = (user_data.get('apellidoPaterno', '') + " " + user_data.get('apellidoMaterno', '')).strip()
         aux_last_name = aux_last_name.split(" ")
         aux_first_name = user_data['nombres'].split(" ")
 
