@@ -156,14 +156,14 @@ class Content(object):
         from student.helpers import do_create_account
 
         # Check and remove email if its already registered
-
+        user_pass = "invalid" if 'pass' not in user_data else user_data['pass']  # Temporary password
         if user_data['email'] == 'null':
             user_data['email'] = str(uuid.uuid4()) + '@invalid.invalid'
         form = AccountCreationForm(
             data={
                 "username": self.generate_username(user_data),
                 "email": user_data['email'],
-                "password": "invalid" if 'pass' not in user_data else user_data['pass'],  # Temporary password
+                "password": user_pass,
                 "name": user_data['nombreCompleto'],
             },
             tos_required=False,
@@ -176,9 +176,10 @@ class Content(object):
         from student.models import create_comments_service_user
         create_comments_service_user(user)
 
-        # Invalidate the user password, as it will be never be used
-        user.set_unusable_password()
-        user.save()
+        if 'pass' not in user_data:
+            # Invalidate the user password, as it will be never be used
+            user.set_unusable_password()
+            user.save()
 
         return user
 
