@@ -12,7 +12,7 @@ class EdxLoginUser(models.Model):
             ("uchile_instructor_staff",
              "instructor can enroll/unenroll users"),
         ]
-    run = models.CharField(max_length=18, unique=True, db_index=True)
+    run = models.CharField(max_length=20, unique=True, db_index=True)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -23,7 +23,7 @@ class EdxLoginUser(models.Model):
 class EdxLoginUserCourseRegistration(models.Model):
     MODE_CHOICES = (("audit", "audit"), ("honor", "honor"))
 
-    run = models.CharField(max_length=18, db_index=True)
+    run = models.CharField(max_length=20, db_index=True)
 
     course = CourseKeyField(max_length=255)
     mode = models.TextField(choices=MODE_CHOICES)

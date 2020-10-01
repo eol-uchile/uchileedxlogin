@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.views.generic.base import View
 from django.http import HttpResponse
 from .models import EdxLoginUser, EdxLoginUserCourseRegistration
+from .email_tasks import enroll_email
 from urllib.parse import urlencode
 from itertools import cycle
 from opaque_keys.edx.keys import CourseKey
@@ -29,7 +30,7 @@ import logging
 import sys
 import unicodecsv as csv
 import re
-
+from django.contrib.auth.base_user import BaseUserManager
 logger = logging.getLogger(__name__)
 regex = r'^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$'
 
@@ -162,7 +163,7 @@ class Content(object):
             data={
                 "username": self.generate_username(user_data),
                 "email": user_data['email'],
-                "password": "invalid",  # Temporary password
+                "password": "invalid" if 'pass' not in user_data else user_data['pass'],  # Temporary password
                 "name": user_data['nombreCompleto'],
             },
             tos_required=False,
@@ -191,10 +192,16 @@ class Content(object):
         4. return first_name[0] + "_" first_name[1..N][0..N] + "_" + last_name[1..N][0..N]
         5. return first_name[0] + "_" + last_name[0] + N
         """
-        aux_last_name = ((user_data['apellidoPaterno'] or '') +
-                         " " + (user_data['apellidoMaterno'] or '')).strip()
-        aux_last_name = aux_last_name.split(" ")
-        aux_first_name = user_data['nombres'].replace("."," ").split(" ")
+        if 'apellidoPaterno' not in user_data or 'apellidoMaterno' not in user_data or 'nombres' not in user_data:
+            aux_username = user_data['nombreCompleto'].replace("."," ").split(" ")
+            i = int(len(aux_username)/2)
+            aux_first_name = aux_username[0:i]
+            aux_last_name = aux_username[i:]
+        else:
+            aux_last_name = ((user_data['apellidoPaterno'] or '') +
+                            " " + (user_data['apellidoMaterno'] or '')).strip()
+            aux_last_name = aux_last_name.split(" ")
+            aux_first_name = user_data['nombres'].replace("."," ").split(" ")
 
         first_name = [
             unidecode.unidecode(x).replace(
@@ -415,6 +422,35 @@ class ContentStaff(object):
                     access = True
         return access
 
+    def get_username(self, run):
+        """
+        Get username
+        """
+
+        parameters = {
+            'rutUsuario': run
+        }
+        result = requests.post(
+            settings.EDXLOGIN_USERNAME,
+            data=json.dumps(parameters),
+            headers={
+                'content-type': 'application/json'})
+        if result.status_code != 200:
+            logger.error(
+                "{} {}".format(
+                    result.request,
+                    result.request.headers))
+            raise Exception("Wrong run {} {}".format(result.status_code, run))
+
+        data = json.loads(result.text)
+        username = ""
+        if "cuentascorp" in data and len(data["cuentascorp"]) > 0:
+            email = data["cuentascorp"]
+            for name in email:
+                if name["tipoCuenta"] == "CUENTA PASAPORTE":
+                    username = name["cuentaCorp"] or ""
+                    break
+        return username
 
 class EdxLoginLoginRedirect(View):
     def get(self, request):
@@ -747,36 +783,6 @@ class EdxLoginStaff(View, Content, ContentStaff):
         except Exception:
             return None
 
-    def get_username(self, run):
-        """
-        Get username
-        """
-
-        parameters = {
-            'rutUsuario': run
-        }
-        result = requests.post(
-            settings.EDXLOGIN_USERNAME,
-            data=json.dumps(parameters),
-            headers={
-                'content-type': 'application/json'})
-        if result.status_code != 200:
-            logger.error(
-                "{} {}".format(
-                    result.request,
-                    result.request.headers))
-            raise Exception("Wrong run {} {}".format(result.status_code, run))
-
-        data = json.loads(result.text)
-        username = ""
-        if "cuentascorp" in data and len(data["cuentascorp"]) > 0:
-            email = data["cuentascorp"]
-            for name in email:
-                if name["tipoCuenta"] == "CUENTA PASAPORTE":
-                    username = name["cuentaCorp"] or ""
-                    break
-        return username
-
 
 class EdxLoginExport(View):
     """
@@ -807,3 +813,238 @@ class EdxLoginExport(View):
         writer.writerows(data)
 
         return response
+
+class EdxLoginExternal(View, Content, ContentStaff):
+    """
+        .
+    """
+    def get(self, request):
+        #context = {'usernames': '','runs': '','emails': '', 'auto_enroll': True, 'modo': 'audit'}
+        context = {'datos': '', 'auto_enroll': True, 'modo': 'audit'}
+        return render(request, 'edxlogin/external.html', context)
+
+    def post(self, request):
+        course_id = request.POST.get("course", "")
+        if self.validate_user(request, course_id):
+            lista_data = request.POST.get("datos", "").split('\n')
+            # limpieza de los run ingresados
+            lista_data = [run.strip() for run in lista_data]
+            lista_data = [run for run in lista_data if run]
+            lista_data = [d.split(",") for d in lista_data]
+            # verifica si el checkbox de auto enroll fue seleccionado
+            enroll = False
+            if request.POST.getlist("enroll"):
+                enroll = True
+
+            context = {
+                'datos': request.POST.get('datos'),
+                'curso': course_id,
+                'auto_enroll': enroll,
+                'modo': request.POST.get("modes", None)}
+            # validacion de datos
+            context = self.validate_data_external(request, lista_data, context)
+            # retorna si hubo al menos un error
+            if len(context) > 4:
+                return render(request, 'edxlogin/external.html', context)
+
+            lista_saved, lista_not_saved = self.enroll_create_user(
+                request, lista_data, enroll)
+            redirect_url = request.build_absolute_uri('/courses/{}/course'.format(course_id))
+            email_saved = []
+            for email in lista_saved:
+                enroll_email.delay(email['password'], email['email_d'], course_id, redirect_url, email['sso'])
+                aux = email
+                aux.pop('password', None)
+                email_saved.append(aux)
+                
+            context = {
+                'datos': '', 
+                'auto_enroll': True, 
+                'modo': 'audit'
+            }
+            print(email_saved)
+            if len(email_saved) > 0:
+                context['lista_saved'] = email_saved
+            if len(lista_not_saved) > 0:
+                context['lista_not_saved'] = lista_not_saved
+            return render(request, 'edxlogin/external.html', context)
+
+        else:
+            logger.error("User is Anonymous or dont have next permission: uchile_instructor_staff, instructor, course_staff, staff.")
+            raise Http404()
+
+    def validate_data_external(self, request, lista_data, context):
+        wrong_data = []
+        # si no se ingreso datos
+        if not lista_data:
+            logger.error("Empty Data, user: {}".format(request.user.id))
+            context['no_data'] = ''
+        for data in lista_data:
+            data = [d.strip() for d in data]
+            if len(data) == 1 or len(data)>3:
+                wrong_data.append(data)
+                logger.error("Wrong Data, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+            else:
+                if len(data) == 2:
+                    data.append("")
+                if data[0] != "" and data[1] != "":
+                    if not re.match(regex, data[1].lower()) or (data[2] != "" and not self.validarRutAllType(request, data[2])):
+                        wrong_data.append(data)
+                else:
+                    wrong_data.append(data)
+        if len(wrong_data) > 0:
+            logger.error("Wrong Data, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+            context['wrong_data'] = wrong_data
+        # valida curso
+        if request.POST.get("course", "") == "":
+            logger.error("Empty course, user: {}".format(request.user.id))
+            context['curso2'] = ''
+        # valida si existe el curso
+        elif not self.validate_course(request.POST.get("course", "")):
+            logger.error("Couse dont exists, user: {}, course_id: {}".format(request.user.id, request.POST.get("course", "")))
+            context['error_curso'] = ''
+
+        # si el modo es incorrecto
+        if not request.POST.get(
+                "modes", None) in [
+                x[0] for x in EdxLoginUserCourseRegistration.MODE_CHOICES]:
+            context['error_mode'] = ''
+            logger.error("Wrong Mode, user: {}, mode: {}".format(request.user.id, request.POST.get("modes", "")))
+        return context
+    
+    def validarRutAllType(self, request, run):
+        try:
+            if run[0] == 'P':
+                if 5 > len(run[1:]) or len(run[1:]) > 20:
+                    logger.error("Rut Passport wrong, user: {}, rut".format(request.user.id, run))
+                    return False
+            elif run[0:2] == 'CG':
+                if len(run) != 10:
+                    logger.error("Rut CG wrong, user: {}, rut".format(request.user.id, run))
+                    return False
+            else:
+                if not self.validarRut(run):
+                    logger.error("Rut wrong, user: {}, rut".format(request.user.id, run))
+                    return False
+
+        except Exception:
+            logger.error("Rut wrong, user: {}, rut".format(request.user.id, run))
+            return False
+
+        return True
+
+    def enroll_create_user(self, request, lista_data, enroll):
+        """
+            Enroll/force enroll users
+        """
+        lista_saved = []
+        lista_not_saved = []
+        # guarda el form
+        with transaction.atomic():
+            for dato in lista_data:
+                dato = [d.strip() for d in dato]
+                if len(dato) == 3:
+                    dato[2] = dato[2].upper()
+                    dato[2] = dato[2].replace("-", "")
+                    dato[2] = dato[2].replace(".", "")
+                    dato[2] = dato[2].strip()
+                if len(dato) == 2:
+                    dato.append("")
+                while len(dato[2]) > 0 and len(dato[2]) < 10 and 'P' != dato[2][0] and 'CG' != dato[2][0:2]:
+                    dato[2] = "0" + dato[2]
+                aux_email = dato[1]
+                aux_pass = BaseUserManager().make_random_password(12)
+                if User.objects.filter(email=dato[1]).exists():
+                    dato[1] = 'null'
+                if dato[2] != "":
+                    edxlogin_user, created = self.create_user_with_run(dato, aux_pass)
+                    if created is not None:
+                        self.enroll_course(edxlogin_user, request.POST.get("course", ""), enroll, request.POST.get("modes", None))
+                        lista_saved.append({
+                            'email_o': aux_email,
+                            'email_d': edxlogin_user.user.email,
+                            'rut': dato[2],
+                            'password': aux_pass,
+                            'sso': created
+                        })
+                    else:
+                        lista_not_saved.append(aux_email)
+                else:
+                    if dato[1] != 'null':
+                        user_data = {
+                            'email':dato[1],
+                            'nombreCompleto':dato[0],
+                            'pass': aux_pass
+                        }
+                        user = self.create_user_by_data(user_data)
+                        self.enroll_course_user(user, request.POST.get("course", ""), enroll, request.POST.get("modes", None))
+                        lista_saved.append({
+                            'email_o': aux_email,
+                            'email_d': user.email,
+                            'rut': '',
+                            'password': aux_pass,
+                            'sso': False
+                        })
+                    else:
+                        lista_not_saved.append(aux_email)
+        return lista_saved, lista_not_saved
+    
+    def create_user_with_run(self, dato, aux_pass):
+        """
+            Get user data and create the user
+        """
+        if EdxLoginUser.objects.filter(run=dato[2]).exists():
+            #actualizar correo?
+            return EdxLoginUser.objects.get(run=dato[2]), None
+        try:
+            username = self.get_username(dato[2])
+            user_data = self.get_user_data(username)
+            user_data['username'] = username
+            user_data['pass'] = aux_pass
+            edxlogin_user = self.create_user_external(user_data, dato)
+            return edxlogin_user, True
+        except Exception:
+            with transaction.atomic():
+                user_data = {
+                    'email': dato[1],
+                    'nombreCompleto':dato[0],
+                    'pass': aux_pass
+                }
+                user = self.create_user_by_data(user_data)
+                edxlogin_user = EdxLoginUser.objects.create(
+                    user=user,
+                    run=dato[2]
+                )
+            return edxlogin_user, False
+
+    def create_user_external(self, user_data, dato):
+        """
+        Create the user given the user data.
+        If the user exists, update the email address in case the users has updated it.
+        """
+        with transaction.atomic():
+            user_data['email'] = dato[1] if dato[1] != 'null' else self.get_user_email(user_data['rut'])
+            user = self.create_user_by_data(user_data)
+            edxlogin_user = EdxLoginUser.objects.create(
+                user=user,
+                run=user_data['rut']
+            )
+        return edxlogin_user
+    
+    def enroll_course_user(self, user, course, enroll, mode):
+        """
+        Enroll the user in the pending courses, removing the enrollments when
+        they are applied.
+        """
+        from student.models import CourseEnrollment, CourseEnrollmentAllowed
+
+        if enroll:
+            CourseEnrollment.enroll(
+                user,
+                CourseKey.from_string(course),
+                mode=mode)
+        else:
+            CourseEnrollmentAllowed.objects.create(
+                course_id=CourseKey.from_string(course),
+                email=user.email,
+                user=user)

@@ -1,0 +1,112 @@
+## mako
+
+<%page expression_filter="h"/>
+<%! from django.utils.translation import ugettext as _ %>
+<%inherit file="../main.html" />
+<%block name="pagetitle">${_("Inscripcion")}</%block>
+<main id="main" aria-label="Content" tabindex="-1" class="static_pages">
+<style>
+    
+@media (min-width: 10px){
+    .inputwidth1{
+		margin-right: 0px;
+    }
+    .inputwidth2{
+		margin-right: 0px;
+    }
+    .inputwidth3{
+		margin-right: 0px;
+	}
+}
+@media (min-width: 750px){
+    .inputwidth1{
+		margin-right: 319px;
+    }
+    .inputwidth2{
+		margin-right: 413px;
+    }
+   
+}
+@media (min-width: 870px){   
+    .inputwidth3{
+		margin-right: 505px;
+	}
+}
+textarea {
+    border:none;
+    resize:none;
+    width:33%;
+    margin:0;
+    padding:0;
+    min-width: 400px; 
+    font-style: normal; 
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif
+}
+.datos-external {
+    border:solid 1px black;
+}
+</style>
+<h1>Inscripción Externa</h1>
+    <div style="text-align: center">
+        <form method="POST">
+           <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}"/>
+            % if context.get('lista_saved', UNDEFINED) is not UNDEFINED:
+                <p id="lista_saved" style="color:rgb(56, 181, 197); margin-bottom: 15px;">${lista_saved}</p>
+            % endif
+            % if context.get('lista_not_saved', UNDEFINED) is not UNDEFINED:
+                <p id="not_saved" style="color:firebrick; margin-bottom: 15px;">${lista_not_saved}</p>
+            % endif
+            % if context.get('wrong_data', UNDEFINED) is not UNDEFINED:
+                <p id="wrong_data" style="color:firebrick; margin-bottom: 15px;">Estos Datos están incorrectos: ${wrong_data}.</p>
+            % endif
+            % if context.get('no_data', UNDEFINED) is not UNDEFINED:
+                <p id="no_data" style="color:firebrick; margin-bottom: 15px;">Falta agregar datos.</p>
+            % endif            
+            % if context.get('curso2', UNDEFINED) is not UNDEFINED:
+                <p id="curso2" style="color:firebrick; margin-bottom: 15px;">Falta agregar curso.</p>
+            % endif
+            % if context.get('error_curso', UNDEFINED) is not UNDEFINED:
+                <p id="error_curso" style="color:firebrick; margin-bottom: 15px;">Curso no existe.</p>
+            % endif
+            % if context.get('error_mode', UNDEFINED) is not UNDEFINED:
+                <p style="color:firebrick; margin-bottom: 15px;">El modo esta incorrecto.</p>
+            % endif
+           <!--div class="container datos-external">
+               <textarea type="text" name='usernames' id="usernames" placeholder="pedro&#10;juan&#10;diego"></textarea>
+               <textarea type="text" name='emails' id="emails" placeholder="a@b.c&#10;a@b.c&#10;a@b.c"></textarea>
+               <textarea type="text" name='runs' id="runs" placeholder="12345678-k&#10;12345678-k&#10;10-8"></textarea>
+            </div-->
+            <textarea type="text" name='datos' id="datos" placeholder="juanito perez, a@b.c, 12345678-k&#10;juanito perez, a@b.c, 12345678-k"></textarea>
+                
+            <div class="form-group" style="margin: 15px 15px;">
+                <label for="course" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">ID Curso:</label>
+                % if context.get('curso', UNDEFINED) is not UNDEFINED:
+                    <input style="min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;margin-right: 13px;" type="text" name='course' id="course"  placeholder="course-v1:mss+MSS001+2019_2" value="${curso}"></input>                    
+                % else:
+                    <input style="min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;margin-right: 13px;" type="text" name='course' id='course' placeholder="course-v1:mss+MSS001+2019_2"></input>
+                % endif
+            </div>
+            <div class="form-group" style="margin: 15px 15px;">
+                <label for="modes" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">Modo:</label>
+                <select class="inputwidth1" style="font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" name='modes'>
+                    % if context.get('modo', "") == 'honor':
+                        <option value="audit">audit</option>
+                        <option value="honor" selected>honor</option>
+                    % else:
+                        <option value="audit" selected>audit</option>
+                        <option value="honor">honor</option>
+                    % endif
+                </select>
+            </div>
+            <div class="form-group" style="margin: 15px 15px;">
+                <label for="enroll" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">Auto Enroll:</label>
+                % if context.get('auto_enroll', "") is False:
+                    <input class="inputwidth2" type="checkbox"  name='enroll' id='enroll' value="1"></input>
+                % else:
+                    <input class="inputwidth2" type="checkbox"  name='enroll' id='enroll' value="1" checked></input>
+                % endif
+            </div>
+            <input type="submit" style="text-shadow: none; border-color:white; background-color: #0075b4; background-image: none; display:block; margin: auto" value="Enviar">
+        </form>
+    </div>
+</main>
