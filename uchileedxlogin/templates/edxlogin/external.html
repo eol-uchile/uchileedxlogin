@@ -33,35 +33,68 @@
 	}
 }
 textarea {
-    border:none;
-    resize:none;
-    width:33%;
-    margin:0;
-    padding:0;
-    min-width: 400px; 
+    resize: both;
+    overflow: auto;
+    min-width: 500px;
     font-style: normal; 
-    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    width: 600px;
 }
-.datos-external {
-    border:solid 1px black;
+p {
+    font-style: normal; 
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
 }
 </style>
+<script type="text/javascript"> 
+    function limitTextarea(textarea, maxLines) {      
+        var lines = textarea.value.replace(/\r/g, '').trim();
+        lines = lines.split('\n');
+        lines = lines.filter(function(el) { return el; });              
+        if (maxLines && lines.length > maxLines) {
+            lines = lines.slice(0, maxLines);
+            textarea.value = lines.join('\n')
+        }
+    }
+</script>
 <h1>Inscripción Externa</h1>
     <div style="text-align: center">
         <form method="POST">
            <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}"/>
             % if context.get('lista_saved', UNDEFINED) is not UNDEFINED:
-                <p id="lista_saved" style="color:rgb(56, 181, 197); margin-bottom: 15px;">${lista_saved}</p>
+                <p id="lista_saved" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
+                    <b>Usuarios Creados e Inscritos:</b></br>
+                    %for run in lista_saved:
+                        % if run['email_o'] == run['email_d']:
+                            ${run['email_o']}, ${run['rut']}
+                        % else:
+                            El correo '${run['email_o']}' ya existe, inscripción enviada a '${run['email_d']}', ${run['rut']}
+                        % endif
+                        </br>
+                    %endfor
+                </p>
             % endif
             % if context.get('lista_not_saved', UNDEFINED) is not UNDEFINED:
-                <p id="not_saved" style="color:firebrick; margin-bottom: 15px;">${lista_not_saved}</p>
+                <p id="not_saved" style="color:goldenrod; margin-bottom: 15px;">
+                    <b>Correos y/o Rut ya existen en la plataforma:</b></br>
+                    %for email in lista_not_saved:
+                        ${email}</br>
+                    %endfor
+                </p>
             % endif
             % if context.get('wrong_data', UNDEFINED) is not UNDEFINED:
-                <p id="wrong_data" style="color:firebrick; margin-bottom: 15px;">Estos Datos están incorrectos: ${wrong_data}.</p>
+                <p id="wrong_data" style="color:firebrick; margin-bottom: 15px;">
+                    <b>Estos Datos están incorrectos: </b></br>
+                    %for data in wrong_data:
+                        ${data[0]}, ${data[1]}, ${data[2]}</br>
+                    %endfor
+                </p>
             % endif
             % if context.get('no_data', UNDEFINED) is not UNDEFINED:
                 <p id="no_data" style="color:firebrick; margin-bottom: 15px;">Falta agregar datos.</p>
-            % endif            
+            % endif
+            % if context.get('limit_data', UNDEFINED) is not UNDEFINED:
+                <p id="limit_data" style="color:firebrick; margin-bottom: 15px;">El limite de inscripciones a la vez es 50.</p>
+            % endif
             % if context.get('curso2', UNDEFINED) is not UNDEFINED:
                 <p id="curso2" style="color:firebrick; margin-bottom: 15px;">Falta agregar curso.</p>
             % endif
@@ -69,15 +102,13 @@ textarea {
                 <p id="error_curso" style="color:firebrick; margin-bottom: 15px;">Curso no existe.</p>
             % endif
             % if context.get('error_mode', UNDEFINED) is not UNDEFINED:
-                <p style="color:firebrick; margin-bottom: 15px;">El modo esta incorrecto.</p>
+                <p id="error_mode" style="color:firebrick; margin-bottom: 15px;">El modo esta incorrecto.</p>
             % endif
-           <!--div class="container datos-external">
-               <textarea type="text" name='usernames' id="usernames" placeholder="pedro&#10;juan&#10;diego"></textarea>
-               <textarea type="text" name='emails' id="emails" placeholder="a@b.c&#10;a@b.c&#10;a@b.c"></textarea>
-               <textarea type="text" name='runs' id="runs" placeholder="12345678-k&#10;12345678-k&#10;10-8"></textarea>
-            </div-->
-            <textarea type="text" name='datos' id="datos" placeholder="juanito perez, a@b.c, 12345678-k&#10;juanito perez, a@b.c, 12345678-k"></textarea>
-                
+            <p style="color:black; margin-bottom: 15px;">Limite de Inscripciones a la vez: 50.</p>
+            <div class="form-group" style="margin: 15px 15px;">
+                <label for="datos" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">Datos:</label>
+                <textarea type="text" spellcheck="false" onkeyup="limitTextarea(this,50)" name='datos' id="datos" placeholder="juanito perez, a@b.c, 12345678-k&#10;juanito perez, a@b.c, 12345678-k">${datos}</textarea>
+            </div>
             <div class="form-group" style="margin: 15px 15px;">
                 <label for="course" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">ID Curso:</label>
                 % if context.get('curso', UNDEFINED) is not UNDEFINED:

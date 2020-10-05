@@ -1672,3 +1672,224 @@ class TestExternalView(ModuleStoreTestCase):
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="not_saved"' in response._container[0].decode())
+
+    def test_external_post_without_run_multiple_data(self):
+        """
+            Test external view post without run, multiple data
+        """
+        post_data = {
+            'datos': 'gggggggg fffffff, aux.student1@edx.org\naa bb cc dd, aux.student2@edx.org\nttttt rrrrr, aux.student3@edx.org',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        self.assertFalse(User.objects.filter(email="aux.student1@edx.org").exists())
+        self.assertFalse(User.objects.filter(email="aux.student2@edx.org").exists())
+        self.assertFalse(User.objects.filter(email="aux.student3@edx.org").exists())
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="lista_saved"' in response._container[0].decode())
+        self.assertTrue(User.objects.filter(email="aux.student1@edx.org").exists())
+        self.assertTrue(User.objects.filter(email="aux.student2@edx.org").exists())
+        self.assertTrue(User.objects.filter(email="aux.student3@edx.org").exists())
+
+    def test_external_post_empty_data(self):
+        """
+            Test external view post without data
+        """
+        post_data = {
+            'datos': '',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="no_data"' in response._container[0].decode())
+
+    def test_external_post_empty_course(self):
+        """
+            Test external view post without course
+        """
+        post_data = {
+            'datos': 'gggggggg fffffff, aux.student1@edx.org\n',
+            'course': '',
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="curso2"' in response._container[0].decode())
+
+    def test_external_post_wrong_course(self):
+        """
+            Test external view post with wrong course
+        """
+        post_data = {
+            'datos': 'gggggggg fffffff, aux.student1@edx.org\n',
+            'course': 'asdadsadsad',
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="error_curso"' in response._container[0].decode())
+
+    def test_external_post_course_not_exists(self):
+        """
+            Test external view post, course not exists
+        """
+        post_data = {
+            'datos': 'gggggggg fffffff, aux.student1@edx.org\n',
+            'course': 'course_v1:eol+test+2020',
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="error_curso"' in response._container[0].decode())
+
+    def test_external_post_empty_mode(self):
+        """
+            Test external view post without mode
+        """
+        post_data = {
+            'datos': 'asd asd, asd asd@ada.as',
+            'course': self.course.id,
+            'modes': '',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="error_mode"' in response._container[0].decode())
+
+    def test_external_post_empty_name(self):
+        """
+            Test external view post without full name 
+        """
+        post_data = {
+            'datos': ', asd@asad.cl',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="wrong_data"' in response._container[0].decode())
+
+    def test_external_post_empty_email(self):
+        """
+            Test external view post without email
+        """
+        post_data = {
+            'datos': 'adssad sadadas',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="wrong_data"' in response._container[0].decode())
+
+    def test_external_post_wrong_run(self):
+        """
+            Test external view post with wrong run
+        """
+        post_data = {
+            'datos': 'asdda sadsa, asd@asad.cl, 10-9',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="wrong_data"' in response._container[0].decode())
+
+    def test_external_post_wrong_email(self):
+        """
+            Test external view post with wrong email
+        """
+        post_data = {
+            'datos': 'asdasd adsad, as$d_asd.asad.cl',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="wrong_data"' in response._container[0].decode())
+
+    def test_external_post_wrong_name(self):
+        """
+            Test external view post when full name only have 1 word
+        """
+        post_data = {
+            'datos': 'word, asd@asad.cl',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="wrong_data"' in response._container[0].decode())
+
+    def test_external_post_wrong_name_special_chatacter(self):
+        """
+            Test external view post with special character
+        """
+        post_data = {
+            'datos': 'asd$asd ads#ad, adsad@adsa.cl',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="wrong_data"' in response._container[0].decode())
+
+    def test_external_post_without_run_name_with_special_character(self):
+        """
+            Test external view post, name with special characters
+        """
+        post_data = {
+            'datos': 'áäéë íïóö.úü , aux.student2@edx.org',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        self.assertFalse(User.objects.filter(email="aux.student2@edx.org").exists())
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="lista_saved"' in response._container[0].decode())
+        self.assertTrue(User.objects.filter(email="aux.student2@edx.org").exists())
+
+    def test_external_post_limit_data_exceeded(self):
+        """
+            Test external view post, limit data exceeded
+        """
+        datos = ""
+        for a in range(55):
+            datos = datos + "a\n"
+        post_data = {
+            'datos': datos,
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="limit_data"' in response._container[0].decode())

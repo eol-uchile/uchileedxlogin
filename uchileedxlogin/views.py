@@ -33,6 +33,7 @@ import re
 from django.contrib.auth.base_user import BaseUserManager
 logger = logging.getLogger(__name__)
 regex = r'^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$'
+regex_names = r'^[A-Za-z0-9\s\.áéíóúüäëïö]+$'
 
 
 def require_post_action():
@@ -817,10 +818,9 @@ class EdxLoginExport(View):
 
 class EdxLoginExternal(View, Content, ContentStaff):
     """
-        .
+        Enroll external user
     """
     def get(self, request):
-        #context = {'usernames': '','runs': '','emails': '', 'auto_enroll': True, 'modo': 'audit'}
         context = {'datos': '', 'auto_enroll': True, 'modo': 'audit'}
         return render(request, 'edxlogin/external.html', context)
 
@@ -828,7 +828,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
         course_id = request.POST.get("course", "")
         if self.validate_user(request, course_id):
             lista_data = request.POST.get("datos", "").split('\n')
-            # limpieza de los run ingresados
+            # limpieza de los datos ingresados
             lista_data = [run.strip() for run in lista_data]
             lista_data = [run for run in lista_data if run]
             lista_data = [d.split(",") for d in lista_data]
@@ -875,24 +875,43 @@ class EdxLoginExternal(View, Content, ContentStaff):
             raise Http404()
 
     def validate_data_external(self, request, lista_data, context):
+        """
+            Validate Data
+        """
         wrong_data = []
         # si no se ingreso datos
         if not lista_data:
             logger.error("Empty Data, user: {}".format(request.user.id))
             context['no_data'] = ''
-        for data in lista_data:
-            data = [d.strip() for d in data]
-            if len(data) == 1 or len(data)>3:
-                wrong_data.append(data)
-                logger.error("Wrong Data, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
-            else:
-                if len(data) == 2:
+        if len(lista_data) > 50:
+            logger.error("data limit is 50, length data: {} user: {}".format(len(lista_data),request.user.id))
+            context['limit_data'] = ''
+        else:
+            for data in lista_data:
+                data = [d.strip() for d in data]
+                if len(data) == 1 or len(data)>3:
                     data.append("")
-                if data[0] != "" and data[1] != "":
-                    if not re.match(regex, data[1].lower()) or (data[2] != "" and not self.validarRutAllType(request, data[2])):
-                        wrong_data.append(data)
-                else:
+                    data.append("")
                     wrong_data.append(data)
+                    logger.error("Wrong Data, only one or four++ parameters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                else:
+                    if len(data) == 2:
+                        data.append("")
+                    if data[0] != "" and data[1] != "":
+                        if len(data[0].replace("."," ").split(" ")) == 1:
+                            logger.error("Wrong Name, not lastname, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                            wrong_data.append(data)
+                        elif not re.match(regex_names, data[0].lower()):
+                            logger.error("Wrong Name, not allowed specials characters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                            wrong_data.append(data)
+                        elif not re.match(regex, data[1].lower()):
+                            logger.error("Wrong Email, one or four or more parameters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                            wrong_data.append(data)
+                        elif data[2] != "" and not self.validarRutAllType(request, data[2]):
+                            logger.error("Wrong Rut, one or four or more parameters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                            wrong_data.append(data)
+                    else:
+                        wrong_data.append(data)
         if len(wrong_data) > 0:
             logger.error("Wrong Data, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
             context['wrong_data'] = wrong_data
@@ -914,6 +933,9 @@ class EdxLoginExternal(View, Content, ContentStaff):
         return context
     
     def validarRutAllType(self, request, run):
+        """
+            Validate all Rut types
+        """
         try:
             if run[0] == 'P':
                 if 5 > len(run[1:]) or len(run[1:]) > 20:
@@ -936,7 +958,8 @@ class EdxLoginExternal(View, Content, ContentStaff):
 
     def enroll_create_user(self, request, lista_data, enroll):
         """
-            Enroll/force enroll users
+            Create and enroll the user with/without UChile account
+            if email or rut exists not saved them
         """
         lista_saved = []
         lista_not_saved = []
@@ -969,12 +992,12 @@ class EdxLoginExternal(View, Content, ContentStaff):
                             'sso': created
                         })
                     else:
-                        lista_not_saved.append(aux_email)
+                        lista_not_saved.append(dato[2])
                 else:
                     if dato[1] != 'null':
                         user_data = {
                             'email':dato[1],
-                            'nombreCompleto':dato[0],
+                            'nombreCompleto':self.name_format(dato[0]),
                             'pass': aux_pass
                         }
                         user = self.create_user_by_data(user_data)
@@ -989,13 +1012,25 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     else:
                         lista_not_saved.append(aux_email)
         return lista_saved, lista_not_saved
-    
+
+    def name_format(self, name):
+        name = name.replace("á","a")
+        name = name.replace("ä","a")
+        name = name.replace("é","e")
+        name = name.replace("ë","e")
+        name = name.replace("í","i")
+        name = name.replace("ï","i")
+        name = name.replace("ó","o")
+        name = name.replace("ö","o")
+        name = name.replace("ú","u")
+        name = name.replace("ü","u")
+        return name
+
     def create_user_with_run(self, dato, aux_pass):
         """
             Get user data and create the user
         """
         if EdxLoginUser.objects.filter(run=dato[2]).exists():
-            #actualizar correo?
             return EdxLoginUser.objects.get(run=dato[2]), None
         try:
             username = self.get_username(dato[2])
@@ -1008,7 +1043,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
             with transaction.atomic():
                 user_data = {
                     'email': dato[1],
-                    'nombreCompleto':dato[0],
+                    'nombreCompleto':self.name_format(dato[0]),
                     'pass': aux_pass
                 }
                 user = self.create_user_by_data(user_data)
@@ -1020,8 +1055,8 @@ class EdxLoginExternal(View, Content, ContentStaff):
 
     def create_user_external(self, user_data, dato):
         """
-        Create the user given the user data.
-        If the user exists, update the email address in case the users has updated it.
+            Create the user given the user data.
+            If the email exists, get new email address.
         """
         with transaction.atomic():
             user_data['email'] = dato[1] if dato[1] != 'null' else self.get_user_email(user_data['rut'])
@@ -1034,8 +1069,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
     
     def enroll_course_user(self, user, course, enroll, mode):
         """
-        Enroll the user in the pending courses, removing the enrollments when
-        they are applied.
+            Enroll the user in the course.
         """
         from student.models import CourseEnrollment, CourseEnrollmentAllowed
 
