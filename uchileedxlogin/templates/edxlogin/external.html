@@ -25,11 +25,10 @@
     .inputwidth2{
 		margin-right: 413px;
     }
-   
 }
 @media (min-width: 870px){   
     .inputwidth3{
-		margin-right: 505px;
+		margin-right: 533px;
 	}
 }
 textarea {
@@ -60,6 +59,12 @@ p {
     <div style="text-align: center">
         <form method="POST">
            <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}"/>
+           <% diff_email = False %>
+            % if context.get('action_send', False) is True:
+                <p id="action_send" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
+                    <b>Correos Enviados Correctamente.</b>
+                </p>
+            % endif
             % if context.get('lista_saved', UNDEFINED) is not UNDEFINED:
                 <p id="lista_saved" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
                     <b>Usuarios Creados e Inscritos:</b></br>
@@ -67,7 +72,8 @@ p {
                         % if run['email_o'] == run['email_d']:
                             ${run['email_o']}, ${run['rut']}
                         % else:
-                            El correo '${run['email_o']}' ya existe, inscripción enviada a '${run['email_d']}', ${run['rut']}
+                            <% diff_email = True %>
+                            El correo '${run['email_o']}' ya existe, correo inscrito '${run['email_d']}', ${run['rut']}*
                         % endif
                         </br>
                     %endfor
@@ -137,7 +143,20 @@ p {
                     <input class="inputwidth2" type="checkbox"  name='enroll' id='enroll' value="1" checked></input>
                 % endif
             </div>
+            <div class="form-group" style="margin: 15px 15px;">
+                <label for="send_email" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">Enviar Invitación por Correo:</label>
+                % if context.get('send_email', "") is False:
+                <input type="checkbox" class="inputwidth3" name='send_email' id='send_email' value="1"></input>
+                % else:
+                <input type="checkbox" class="inputwidth3" name='send_email' id='send_email' value="1" checked></input>
+                % endif
+            </div>
             <input type="submit" style="text-shadow: none; border-color:white; background-color: #0075b4; background-image: none; display:block; margin: auto" value="Enviar">
         </form>
+        % if diff_email:
+            <small id="diff_email" class="text-muted" style="line-height: 54px;">
+                * Estos correos son obtenidos a traves del rut asociado a la cuenta UChile
+            </small>
+        % endif
     </div>
 </main>

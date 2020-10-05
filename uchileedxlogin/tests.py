@@ -1553,6 +1553,7 @@ class TestExternalView(ModuleStoreTestCase):
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="lista_saved"' in response._container[0].decode())
+        self.assertFalse('id="action_send"' in response._container[0].decode())
         self.assertTrue(User.objects.filter(email="aux.student2@edx.org").exists())
     
     def test_external_post_without_run_exists_email(self):
@@ -1611,6 +1612,7 @@ class TestExternalView(ModuleStoreTestCase):
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="lista_saved"' in response._container[0].decode())
+        self.assertFalse('id="action_send"' in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.user.email, "aux.student2@edx.org")
     
@@ -1655,6 +1657,7 @@ class TestExternalView(ModuleStoreTestCase):
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="lista_saved"' in response._container[0].decode())
+        self.assertTrue('id="diff_email"' in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.user.email, "test@test.test")
 
@@ -1893,3 +1896,19 @@ class TestExternalView(ModuleStoreTestCase):
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="limit_data"' in response._container[0].decode())
+    
+    def test_external_post_send_email(self):
+        """
+            Test external view post with send email
+        """
+        post_data = {
+            'datos': 'aa bb cc dd, aux.student2@edx.org',
+            'course': self.course.id,
+            'modes': 'audit',
+            'enroll': '1',
+            'send_email' : '1'
+        }
+        response = self.client.post(
+            reverse('uchileedxlogin-login:external'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('id="action_send"' in response._container[0].decode())

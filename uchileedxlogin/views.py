@@ -821,7 +821,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
         Enroll external user
     """
     def get(self, request):
-        context = {'datos': '', 'auto_enroll': True, 'modo': 'audit'}
+        context = {'datos': '', 'auto_enroll': True, 'modo': 'audit', 'send_email': False}
         return render(request, 'edxlogin/external.html', context)
 
     def post(self, request):
@@ -836,16 +836,20 @@ class EdxLoginExternal(View, Content, ContentStaff):
             enroll = False
             if request.POST.getlist("enroll"):
                 enroll = True
-
+            # verifica si el checkbox de send_email fue seleccionado
+            send_email = False
+            if request.POST.getlist("send_email"):
+                send_email = True
             context = {
                 'datos': request.POST.get('datos'),
                 'curso': course_id,
                 'auto_enroll': enroll,
+                'send_email': send_email,
                 'modo': request.POST.get("modes", None)}
             # validacion de datos
             context = self.validate_data_external(request, lista_data, context)
             # retorna si hubo al menos un error
-            if len(context) > 4:
+            if len(context) > 5:
                 return render(request, 'edxlogin/external.html', context)
 
             lista_saved, lista_not_saved = self.enroll_create_user(
@@ -853,15 +857,18 @@ class EdxLoginExternal(View, Content, ContentStaff):
             redirect_url = request.build_absolute_uri('/courses/{}/course'.format(course_id))
             email_saved = []
             for email in lista_saved:
-                enroll_email.delay(email['password'], email['email_d'], course_id, redirect_url, email['sso'])
+                if send_email:
+                    enroll_email.delay(email['password'], email['email_d'], course_id, redirect_url, email['sso'])
                 aux = email
                 aux.pop('password', None)
                 email_saved.append(aux)
                 
             context = {
-                'datos': '', 
-                'auto_enroll': True, 
-                'modo': 'audit'
+                'datos': '',
+                'auto_enroll': True,
+                'send_email': False,
+                'modo': 'audit',
+                'action_send': send_email
             }
             print(email_saved)
             if len(email_saved) > 0:
