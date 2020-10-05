@@ -60,7 +60,7 @@ p {
         <form method="POST">
            <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}"/>
            <% diff_email = False %>
-            % if context.get('action_send', False) is True:
+            % if context.get('action_send', False) is True and context.get('lista_saved', UNDEFINED) is not UNDEFINED:
                 <p id="action_send" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
                     <b>Correos Enviados Correctamente.</b>
                 </p>

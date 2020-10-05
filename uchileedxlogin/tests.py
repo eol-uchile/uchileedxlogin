@@ -1896,7 +1896,7 @@ class TestExternalView(ModuleStoreTestCase):
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="limit_data"' in response._container[0].decode())
-    
+
     def test_external_post_send_email(self):
         """
             Test external view post with send email
