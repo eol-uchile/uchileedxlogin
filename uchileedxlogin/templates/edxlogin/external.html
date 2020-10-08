@@ -67,23 +67,19 @@ p {
             % endif
             % if context.get('lista_saved', UNDEFINED) is not UNDEFINED:
                 <p id="lista_saved" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
-                    <b>Usuarios Creados e Inscritos:</b></br>
+                    <b>Usuarios Creados y/o Inscritos:</b></br>
                     %for run in lista_saved:
-                        % if run['email_o'] == run['email_d']:
-                            ${run['email_o']}, ${run['rut']}
+                        % if run['rut'] == run['rut_aux'] and run['rut'] != "":
+                            El rut '${run['rut']}' ya existe, correo asosciado/inscrito '${run['email_d']}', ${run['rut']}
                         % else:
-                            <% diff_email = True %>
-                            El correo '${run['email_o']}' ya existe, correo inscrito '${run['email_d']}', ${run['rut']}*
+                            % if run['email_o'] == run['email_d']:
+                                ${run['email_o']}, ${run['rut']}
+                            % else:
+                                <% diff_email = True %>
+                                El correo '${run['email_o']}' ya existe, correo inscrito '${run['email_d']}', ${run['rut']}*
+                            % endif
                         % endif
                         </br>
-                    %endfor
-                </p>
-            % endif
-            % if context.get('lista_not_saved', UNDEFINED) is not UNDEFINED:
-                <p id="not_saved" style="color:goldenrod; margin-bottom: 15px;">
-                    <b>Correos y/o Rut ya existen en la plataforma:</b></br>
-                    %for email in lista_not_saved:
-                        ${email}</br>
                     %endfor
                 </p>
             % endif

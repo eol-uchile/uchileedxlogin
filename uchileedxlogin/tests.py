@@ -935,7 +935,7 @@ class TestStaffView(ModuleStoreTestCase):
             'force': '1'
         }
 
-        data = {"cuentascorp": [{"cuentaCorp": "avilio.perez@ug.uchile.cl",
+        data = {"cuentascorp": [{"cuentaCourseEnrollmentFactoryCorp": "avilio.perez@ug.uchile.cl",
                                  "tipoCuenta": "EMAIL",
                                  "organismoDominio": "ug.uchile.cl"},
                                 {"cuentaCorp": "avilio.perez@uchile.cl",
@@ -1570,7 +1570,7 @@ class TestExternalView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('id="not_saved"' in response._container[0].decode())
+        self.assertTrue('id="lista_saved"' in response._container[0].decode())
     
     @patch('requests.post')
     @patch('requests.get')
@@ -1674,7 +1674,7 @@ class TestExternalView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('id="not_saved"' in response._container[0].decode())
+        self.assertTrue('id="lista_saved"' in response._container[0].decode())
 
     def test_external_post_without_run_multiple_data(self):
         """
