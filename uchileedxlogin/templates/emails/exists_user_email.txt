@@ -1,0 +1,7 @@
+## mako
+<html>
+<p>${("Este correo ha sido inscrito en el curso: {course_name}.").format(course_name=course_name)}</p>
+<p>Para ingresar al curso <a href="${redirect_url}">Presione aquí</a> e inicie sesión con este correo.</p>
+<p>${("Gracias,")}</p>
+<p>${("Equipo {platform_name}. No respondas a este correo.").format(platform_name=platform_name)}</p>
+</html>

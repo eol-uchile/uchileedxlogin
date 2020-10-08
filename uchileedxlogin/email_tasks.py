@@ -20,7 +20,7 @@ EMAIL_MAX_RETRIES = 5
     queue='edx.lms.core.low',
     default_retry_delay=EMAIL_DEFAULT_RETRY_DELAY,
     max_retries=EMAIL_MAX_RETRIES)
-def enroll_email(user_pass, user_email, course_id, redirect_url, is_sso):
+def enroll_email(user_pass, user_email, course_id, redirect_url, is_sso, exists):
     """
         Send mail to specific user
     """
@@ -37,6 +37,8 @@ def enroll_email(user_pass, user_email, course_id, redirect_url, is_sso):
     }
     if is_sso:
         html_message = render_to_string('emails/sso_email.txt', context)
+    elif exists:
+        html_message = render_to_string('emails/exists_user_email.txt', context)
     else:
         html_message = render_to_string('emails/normal_email.txt', context)
     plain_message = strip_tags(html_message)
