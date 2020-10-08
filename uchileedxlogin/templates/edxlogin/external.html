@@ -20,7 +20,7 @@
 }
 @media (min-width: 750px){
     .inputwidth1{
-		margin-right: 319px;
+		margin-right: 249px;
     }
     .inputwidth2{
 		margin-right: 413px;
@@ -127,11 +127,11 @@ p {
                 <label for="modes" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">Modo:</label>
                 <select class="inputwidth1" style="font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" name='modes'>
                     % if context.get('modo', "") == 'honor':
-                        <option value="audit">audit</option>
-                        <option value="honor" selected>honor</option>
+                        <option value="audit">Equipo Docente</option>
+                        <option value="honor" selected>Estudiante</option>
                     % else:
-                        <option value="audit" selected>audit</option>
-                        <option value="honor">honor</option>
+                        <option value="audit" selected>Equipo Docente</option>
+                        <option value="honor">Estudiante</option>
                     % endif
                 </select>
             </div>
