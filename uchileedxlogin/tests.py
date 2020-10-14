@@ -695,6 +695,32 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
 
+    def test_staff_get_instructor_staff(self):
+        """
+            Test staff view, user with permission
+        """
+        response = self.instructor_staff_client.get(reverse('uchileedxlogin-login:staff'))
+        request = response.request
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
+    
+    def test_staff_get_anonymous_user(self):
+        """
+            Test staff view when user is anonymous
+        """
+        new_client = Client()
+        response = new_client.get(reverse('uchileedxlogin-login:staff'))
+        request = response.request
+        self.assertEqual(response.status_code, 404)
+
+    def test_staff_get_student_user(self):
+        """
+            Test staff view when user is student
+        """
+        response = self.student_client.get(reverse('uchileedxlogin-login:staff'))
+        request = response.request
+        self.assertEqual(response.status_code, 404)
+
     def test_staff_post(self):
         """
             Test staff view post normal process
@@ -1537,6 +1563,32 @@ class TestExternalView(ModuleStoreTestCase):
         request = response.request
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/external/')
+
+    def test_external_get_instructor_staff(self):
+        """
+            Test external view, user with permission
+        """
+        response = self.instructor_staff_client.get(reverse('uchileedxlogin-login:external'))
+        request = response.request
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/external/')
+
+    def test_external_get_anonymous_user(self):
+        """
+            Test external view when user is anonymous
+        """
+        new_client = Client()
+        response = new_client.get(reverse('uchileedxlogin-login:external'))
+        request = response.request
+        self.assertEqual(response.status_code, 404)
+
+    def test_external_get_student_user(self):
+        """
+            Test external view when user is student
+        """
+        response = self.student_client.get(reverse('uchileedxlogin-login:external'))
+        request = response.request
+        self.assertEqual(response.status_code, 404)
 
     def test_external_post_without_run(self):
         """

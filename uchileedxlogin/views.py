@@ -592,12 +592,15 @@ class EdxLoginStaff(View, Content, ContentStaff):
         Enroll/force enroll/unenroll user
     """
     def get(self, request):
-        course_id = request.GET.get("course", "")
-        if self.validate_user(request, course_id):
-            context = {'runs': '', 'auto_enroll': True, 'modo': 'audit'}
-            return render(request, 'edxlogin/staff.html', context)
+        if not request.user.is_anonymous:
+            if request.user.has_perm('uchileedxlogin.uchile_instructor_staff') or request.user.is_staff:
+                context = {'runs': '', 'auto_enroll': True, 'modo': 'audit'}
+                return render(request, 'edxlogin/staff.html', context)
+            else:
+                logger.error("User dont have permission or is not staff, user: {}".format(request.user))
         else:
-            raise Http404()
+            logger.error("User is Anonymous")
+        raise Http404()
 
     @require_post_action()
     def post(self, request):
@@ -822,8 +825,15 @@ class EdxLoginExternal(View, Content, ContentStaff):
         Enroll external user
     """
     def get(self, request):
-        context = {'datos': '', 'auto_enroll': True, 'modo': 'audit', 'send_email': False}
-        return render(request, 'edxlogin/external.html', context)
+        if not request.user.is_anonymous:
+            if request.user.has_perm('uchileedxlogin.uchile_instructor_staff') or request.user.is_staff:
+                context = {'datos': '', 'auto_enroll': True, 'modo': 'audit', 'send_email': False}
+                return render(request, 'edxlogin/external.html', context)
+            else:
+                logger.error("User dont have permission or is not staff, user: {}".format(request.user))
+        else:
+            logger.error("User is Anonymous")
+        raise Http404()
 
     def post(self, request):
         course_id = request.POST.get("course", "")
