@@ -1,7 +1,14 @@
 ## mako
 <html>
-<p>${("Este correo ha sido inscrito en el curso: {course_name}.").format(course_name=course_name)}</p>
-<p>Para ingresar al curso <a href="${redirect_url}">Presione aquí</a> e inicie sesión con este correo.</p>
+<p>${("Usted ha sido inscrito en el curso: {course_name}.").format(course_name=course_name)}</p>
+<p>Haga click en el siguiente enlace e inicie sesión con su Cuenta Eol para ingresar al curso.</p>
+<p><a href="${redirect_url}">${redirect_url}</a></p></br>
+<p>Para recuperar su contraseña siga los siguientes pasos:</p>
+<p>Dirijase a iniciar sesion de ${platform_name}.</br>
+Presione 'Ingresa con tu cuenta eol' y haga click en '¿Necesita ayuda para iniciar sesión?'.</br>
+Ingrese su correo '${user_email}' y presione Recuperar mi contraseña.</br>
+Recibirá un correo con su nueva contraseña.
+</p>
 <p>${("Gracias,")}</p>
 <p>${("Equipo {platform_name}. No respondas a este correo.").format(platform_name=platform_name)}</p>
 </html>

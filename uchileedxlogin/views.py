@@ -33,7 +33,7 @@ import re
 from django.contrib.auth.base_user import BaseUserManager
 logger = logging.getLogger(__name__)
 regex = r'^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$'
-regex_names = r'^[A-Za-z0-9\s\.áéíóúüäëïö]+$'
+regex_names = r'^[A-Za-z\s\.áéíóúüäëïö]+$'
 
 
 def require_post_action():
@@ -917,7 +917,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                             logger.error("Wrong Name, not lastname, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
                             wrong_data.append(data)
                         elif not re.match(regex_names, data[0].lower()):
-                            logger.error("Wrong Name, not allowed specials characters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                            logger.error("Wrong Name, not allowed specials characters or numbers, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
                             wrong_data.append(data)
                         elif not re.match(regex, data[1].lower()):
                             logger.error("Wrong Email, one or four or more parameters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
