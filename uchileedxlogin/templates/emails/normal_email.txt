@@ -3,15 +3,14 @@
 <p>${("Usted ha sido inscrito en el curso: {course_name}.").format(course_name=course_name)}</p>
 <p>Haga click en el siguiente enlace e inicie sesión con los siguientes datos para ingresar al curso.</p>
 <p>${("Cuenta Eol")}</p>
-<p>${("Correo: {user_email}").format(user_email=user_email)}</br>
-${("Contraseña: {user_password}").format(user_password=user_password)}</br>
-Enlace: <a href="${redirect_url}">Haz clic acá para iniciar sesión e ingresar al curso.</a></p></br>
+<p>${("Correo: {user_email}").format(user_email=user_email)}</p>
+<p>${("Contraseña: {user_password}").format(user_password=user_password)}</p>
+<p>Enlace: <a href="${redirect_url}">Haz clic acá para iniciar sesión e ingresar al curso.</a></p>
 <p>Para recuperar su contraseña siga los siguientes pasos:</p>
-<p>Dirijase a iniciar sesion de ${platform_name}.</br>
-Presione 'Ingresa con tu cuenta eol' y haga click en '¿Necesita ayuda para iniciar sesión?'.</br>
-Ingrese su correo '${user_email}' y presione Recuperar mi contraseña.</br>
-Recibirá un correo con su nueva contraseña.
-</p>
+<p>Dirijase a iniciar sesión de la plataforma.</p>
+<p>Presione 'Ingresa con tu cuenta eol' y haga click en '¿Necesita ayuda para iniciar sesión?'.</p>
+<p>Ingrese su correo '${user_email}' y presione 'Recuperar mi contraseña'.</p>
+<p>Recibirá un correo con su nueva contraseña.</p>
 <p>${("Gracias,")}</p>
 <p>${("Equipo {platform_name}. No respondas a este correo.").format(platform_name=platform_name)}</p>
 </html>
