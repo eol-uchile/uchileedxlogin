@@ -33,7 +33,7 @@ import re
 from django.contrib.auth.base_user import BaseUserManager
 logger = logging.getLogger(__name__)
 regex = r'^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$'
-regex_names = r'^[A-Za-z\s\.áéíóúüäëïö]+$'
+regex_names = r'^[A-Za-z\s\-\.áéíóúüäëïö]+$'
 
 
 def require_post_action():
@@ -196,7 +196,8 @@ class Content(object):
         5. return first_name[0] + "_" + last_name[0] + N
         """
         if 'apellidoPaterno' not in user_data or 'apellidoMaterno' not in user_data or 'nombres' not in user_data:
-            aux_username = user_data['nombreCompleto'].replace("."," ").split(" ")
+            aux_username = user_data['nombreCompleto'].replace("."," ")
+            aux_username = aux_username.replace("-"," ").split(" ")
             i = int(len(aux_username)/2)
             aux_first_name = aux_username[0:i]
             aux_last_name = aux_username[i:]
@@ -827,7 +828,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
     def get(self, request):
         if not request.user.is_anonymous:
             if request.user.has_perm('uchileedxlogin.uchile_instructor_staff') or request.user.is_staff:
-                context = {'datos': '', 'auto_enroll': True, 'modo': 'audit', 'send_email': False}
+                context = {'datos': '', 'auto_enroll': True, 'modo': 'honor', 'send_email': False}
                 return render(request, 'edxlogin/external.html', context)
             else:
                 logger.error("User dont have permission or is not staff, user: {}".format(request.user))
@@ -878,7 +879,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                 'datos': '',
                 'auto_enroll': True,
                 'send_email': False,
-                'modo': 'audit',
+                'modo': 'honor',
                 'action_send': send_email
             }
             if len(email_saved) > 0:
@@ -913,17 +914,20 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     if len(data) == 2:
                         data.append("")
                     if data[0] != "" and data[1] != "":
-                        if len(data[0].replace("."," ").split(" ")) == 1:
+                        aux_name = data[0].lower()
+                        aux_name = aux_name.replace("."," ")
+                        aux_name = aux_name.replace("-"," ")
+                        if len(aux_name.split(" ")) == 1:
                             logger.error("Wrong Name, not lastname, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
                             wrong_data.append(data)
-                        elif not re.match(regex_names, data[0].lower()):
+                        elif not re.match(regex_names, unidecode.unidecode(aux_name)):
                             logger.error("Wrong Name, not allowed specials characters or numbers, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
                             wrong_data.append(data)
                         elif not re.match(regex, data[1].lower()):
-                            logger.error("Wrong Email, one or four or more parameters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                            logger.error("Wrong Email {}, user: {}, wrong_data: {}".format(data[1].lower(), request.user.id, wrong_data))
                             wrong_data.append(data)
                         elif data[2] != "" and not self.validarRutAllType(request, data[2]):
-                            logger.error("Wrong Rut, one or four or more parameters, user: {}, wrong_data: {}".format(request.user.id, wrong_data))
+                            logger.error("Wrong Rut {}, user: {}, wrong_data: {}".format(data[2], request.user.id, wrong_data))
                             wrong_data.append(data)
                     else:
                         wrong_data.append(data)

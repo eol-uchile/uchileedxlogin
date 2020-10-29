@@ -1919,7 +1919,7 @@ class TestExternalView(ModuleStoreTestCase):
             Test external view post, name with special characters
         """
         post_data = {
-            'datos': 'áäéë íïóö.úü , aux.student2@edx.org',
+            'datos': 'ニーア オートマタ íï-óö.úü , aux.student2@edx.org',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
