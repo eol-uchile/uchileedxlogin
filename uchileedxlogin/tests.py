@@ -68,7 +68,7 @@ class TestCallbackView(ModuleStoreTestCase):
             user = UserFactory(
                 username='testuser3',
                 password='12345',
-                email='test@test.test',
+                email='test555@test.test',
                 is_staff=True)
         EdxLoginUser.objects.create(user=user, run='009472337K', have_sso=False)
 
@@ -176,7 +176,7 @@ class TestCallbackView(ModuleStoreTestCase):
                                        ["status_code",
                                         "text"])(200,
                                                  json.dumps({"emails": [{"rut": "009472337K",
-                                                                         "email": "test@test.test",
+                                                                         "email": "test555@test.test",
                                                                          "codigoTipoEmail": "1",
                                                                          "nombreTipoEmail": "PRINCIPAL"}]}))]
         edxlogin_user = EdxLoginUser.objects.get(run="009472337K")
@@ -188,7 +188,7 @@ class TestCallbackView(ModuleStoreTestCase):
         edxlogin_user = EdxLoginUser.objects.get(run="009472337K")
         self.assertEqual(edxlogin_user.run, "009472337K")
         self.assertTrue(edxlogin_user.have_sso)
-        self.assertEqual(edxlogin_user.user.email, "test@test.test")
+        self.assertEqual(edxlogin_user.user.email, "test555@test.test")
 
     @patch('requests.post')
     @patch('requests.get')
