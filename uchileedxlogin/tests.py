@@ -64,7 +64,13 @@ class TestCallbackView(ModuleStoreTestCase):
         super(TestCallbackView, self).setUp()
         self.client = Client()
         result = self.client.get(reverse('uchileedxlogin-login:login'))
-
+        with patch('student.models.cc.User.save'):
+            user = UserFactory(
+                username='testuser3',
+                password='12345',
+                email='test@test.test',
+                is_staff=True)
+        EdxLoginUser.objects.create(user=user, run='009472337K', have_sso=False)
 
     @patch('requests.post')
     @patch('requests.get')
@@ -145,6 +151,43 @@ class TestCallbackView(ModuleStoreTestCase):
                 'ticket': 'testticket'})
         edxlogin_user = EdxLoginUser.objects.get(run="0112223334")
         self.assertEqual(edxlogin_user.run, "0112223334")
+        self.assertEqual(edxlogin_user.user.email, "test@test.test")
+
+    @patch('requests.post')
+    @patch('requests.get')
+    def test_login_update_have_sso_param(self, get, post):
+        """
+            Test callback update have_sso param
+        """
+        # Assert requests.get calls
+        get.side_effect = [namedtuple("Request",
+                                      ["status_code",
+                                       "content"])(200,
+                                                   ('yes\ntest.name\n').encode('utf-8')),
+                           namedtuple("Request",
+                                      ["status_code",
+                                       "text"])(200,
+                                                json.dumps({"apellidoPaterno": "TESTLASTNAME",
+                                                            "apellidoMaterno": "TESTLASTNAME",
+                                                            "nombres": "TEST NAME",
+                                                            "nombreCompleto": "TEST NAME TESTLASTNAME TESTLASTNAME",
+                                                            "rut": "009472337K"}))]
+        post.side_effect = [namedtuple("Request",
+                                       ["status_code",
+                                        "text"])(200,
+                                                 json.dumps({"emails": [{"rut": "009472337K",
+                                                                         "email": "test@test.test",
+                                                                         "codigoTipoEmail": "1",
+                                                                         "nombreTipoEmail": "PRINCIPAL"}]}))]
+        edxlogin_user = EdxLoginUser.objects.get(run="009472337K")
+        self.assertFalse(edxlogin_user.have_sso)
+        result = self.client.get(
+            reverse('uchileedxlogin-login:callback'),
+            data={
+                'ticket': 'testticket'})
+        edxlogin_user = EdxLoginUser.objects.get(run="009472337K")
+        self.assertEqual(edxlogin_user.run, "009472337K")
+        self.assertTrue(edxlogin_user.have_sso)
         self.assertEqual(edxlogin_user.user.email, "test@test.test")
 
     @patch('requests.post')
