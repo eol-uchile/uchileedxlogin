@@ -2,7 +2,7 @@
 <html>
 Estimada(o) ${user_name},<br><br>
 Usted ha sido inscrito en el curso "${course_name}".<br>
-Para ingresar, debe dirigirse a <a href="${login_url}">${login_url}</a> y presionar el botón "Ingresa con tu cuenta mi.uchile" e ingresar su cuenta UChile.
+Para ingresar, debe dirigirse a <a href="${login_url}">${login_url}</a> y presionar el botón "Ingresa con tu cuenta mi.uchile" e ingresar su cuenta UChile.<br><br>
 
 Si tiene problemas con su contraseña, debe dirigirse a <a href="https://cuenta.uchile.cl/solicitar-recuperar-cuenta">https://cuenta.uchile.cl/solicitar-recuperar-cuenta</a>, ingresar su RUT o número pasaporte extranjero, presionar 'No soy un Robot' y luego 'Recuperar mi contraseña' y se te enviará un correo con la información para recuperar tu contraseña.<br><br>
 
