@@ -559,8 +559,9 @@ class EdxLoginCallback(View, Content):
         user_data = self.get_user_data(username)
         user_data['username'] = username
         edxlogin_user = self.get_or_create_user(user_data)
-        edxlogin_user.have_sso = True
-        edxlogin_user.save()
+        if not edxlogin_user.have_sso:
+            edxlogin_user.have_sso = True
+            edxlogin_user.save()
         self.enroll_pending_courses(edxlogin_user)
         if request.user.is_anonymous or request.user.id != edxlogin_user.user.id:
             logout(request)
