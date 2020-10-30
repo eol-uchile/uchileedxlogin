@@ -70,7 +70,7 @@ p {
                     <b>Usuarios Creados y/o Inscritos:</b></br>
                     %for run in lista_saved:
                         % if run['rut'] == run['rut_aux'] and run['rut'] != "":
-                            El rut '${run['rut']}' ya existe, correo asosciado/inscrito '${run['email_d']}', ${run['rut']}
+                            El rut '${run['rut']}' ya existe, correo asociado/inscrito '${run['email_d']}', ${run['rut']}
                         % else:
                             % if run['email_o'] == run['email_d']:
                                 ${run['email_o']}, ${run['rut']}
