@@ -1,12 +1,13 @@
 ## mako
 <html>
-<p>${("Usted ha sido inscrito en el curso: {course_name}.").format(course_name=course_name)}</p>
-<p>Haga click en el siguiente enlace e inicie sesión con su Cuenta UChile para ingresar al curso.</p>
-<p><a href="${redirect_url}">${redirect_url}</a></p>
-<p>Para recuperar su contraseña siga los siguientes pasos:</p>
-<p>Presione el siguiente enlace <a href="https://cuenta.uchile.cl/solicitar-recuperar-cuenta">https://cuenta.uchile.cl/solicitar-recuperar-cuenta</a>.</p>
-<p>Ingrese su RUT o número pasaporte extranjero, presione 'No soy un Robot' y luego Recuperar mi contraseña.</p>
-<p>Recibirá un correo con las siguientes instrucciones.</p>
-<p>${("Gracias,")}</p>
-<p>${("Equipo {platform_name}. No respondas a este correo.").format(platform_name=platform_name)}</p>
+Estimada(o) ${user_name},<br><br>
+Usted ha sido inscrito en el curso "${course_name}".<br>
+Para ingresar, debe dirigirse a <a href="${login_url}">${login_url}</a> y presionar el botón "Ingresa con tu cuenta mi.uchile" e ingresar su cuenta UChile.
+
+Si tiene problemas con su contraseña, debe dirigirse a <a href="https://cuenta.uchile.cl/solicitar-recuperar-cuenta">https://cuenta.uchile.cl/solicitar-recuperar-cuenta</a>, ingresar su RUT o número pasaporte extranjero, presionar 'No soy un Robot' y luego 'Recuperar mi contraseña' y se te enviará un correo con la información para recuperar tu contraseña.<br><br>
+
+Gracias,<br>
+Equipo ${platform_name}.<br><br>
+
+Este es un correo automático, por favor no responder.
 </html>

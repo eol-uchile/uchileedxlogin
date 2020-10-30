@@ -33,7 +33,7 @@ import re
 from django.contrib.auth.base_user import BaseUserManager
 logger = logging.getLogger(__name__)
 regex = r'^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$'
-regex_names = r'^[A-Za-z\s\-\.áéíóúüäëïö]+$'
+regex_names = r'^[A-Za-z\s\-\.]+$'
 
 
 def require_post_action():
@@ -867,10 +867,11 @@ class EdxLoginExternal(View, Content, ContentStaff):
             lista_saved = self.enroll_create_user(
                 request, lista_data, enroll)
             redirect_url = request.build_absolute_uri('/courses/{}/course'.format(course_id))
+            login_url = request.build_absolute_uri('/login')
             email_saved = []
             for email in lista_saved:
                 if send_email:
-                    enroll_email.delay(email['password'], email['email_d'], course_id, redirect_url, email['sso'], email['exists'])
+                    enroll_email.delay(email['password'], email['email_d'], course_id, redirect_url, email['sso'], email['exists'], login_url, email['nombreCompleto'])
                 aux = email
                 aux.pop('password', None)
                 email_saved.append(aux)
@@ -1012,6 +1013,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     lista_saved.append({
                         'email_o': aux_email,
                         'email_d': edxlogin_user.user.email,
+                        'nombreCompleto': edxlogin_user.user.profile.name.strip(),
                         'rut': dato[2],
                         'rut_aux': aux_rut,
                         'password': aux_pass,
@@ -1022,7 +1024,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     if dato[1] != 'null':
                         user_data = {
                             'email':dato[1],
-                            'nombreCompleto':self.name_format(dato[0]),
+                            'nombreCompleto':dato[0],
                             'pass': aux_pass
                         }
                         user = self.create_user_by_data(user_data)
@@ -1034,6 +1036,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     lista_saved.append({
                         'email_o': aux_email,
                         'email_d': user.email,
+                        'nombreCompleto': user.profile.name.strip(),
                         'rut': '',
                         'rut_aux': '',
                         'password': aux_pass,
@@ -1042,24 +1045,11 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     })
         return lista_saved
 
-    def name_format(self, name):
-        name = name.replace("á","a")
-        name = name.replace("ä","a")
-        name = name.replace("é","e")
-        name = name.replace("ë","e")
-        name = name.replace("í","i")
-        name = name.replace("ï","i")
-        name = name.replace("ó","o")
-        name = name.replace("ö","o")
-        name = name.replace("ú","u")
-        name = name.replace("ü","u")
-        return name
-
     def create_user_with_run(self, dato, aux_pass):
         """
             Get user data and create the user
         """
-        
+
         try:
             username = self.get_username(dato[2])
             user_data = self.get_user_data(username)
@@ -1072,7 +1062,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                 #if dato[1](email) is 'null' user is created with invalid email
                 user_data = {
                     'email': dato[1],
-                    'nombreCompleto':self.name_format(dato[0]),
+                    'nombreCompleto':dato[0],
                     'pass': aux_pass
                 }
                 user = self.create_user_by_data(user_data)
