@@ -1000,6 +1000,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     dato[2] = "0" + dato[2]
                 aux_email = dato[1]
                 aux_pass = BaseUserManager().make_random_password(12)
+                aux_pass = aux_pass.lower()
                 aux_user = False
                 if User.objects.filter(email=dato[1]).exists():
                     dato[1] = 'null'

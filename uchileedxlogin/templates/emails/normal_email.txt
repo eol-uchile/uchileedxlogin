@@ -7,7 +7,7 @@ Para ingresar, debe dirigirse a <a href="${login_url}">${login_url}</a> y presio
 Correo: ${user_email}<br>
 Contraseña: ${user_password}<br><br>
 
-Si tiene problemas con su contraseña, debe dirigirse a <a href="${login_url}">${login_url}</a>, presionar el botón "Ingresa con tu cuenta eol", y luego "¿Necesita ayuda para iniciar sesión?". Aquí debes colocar tu correo "{correo}", y se te enviará un correo con la información para recuperar tu contraseña.<br><br>
+Si tiene problemas con su contraseña, debe dirigirse a <a href="${login_url}">${login_url}</a>, presionar el botón "Ingresa con tu cuenta eol", y luego "¿Necesita ayuda para iniciar sesión?". Aquí debes colocar tu correo "${user_email}", y se te enviará un correo con la información para recuperar tu contraseña.<br><br>
 
 Gracias,<br>
 Equipo ${platform_name}.<br><br>
