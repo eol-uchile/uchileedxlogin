@@ -84,7 +84,7 @@ class Content(object):
                 "Doesnt exists username in PH API, status_code: {}, username: {}".format(
                     result.status_code, username))
 
-        data = json.loads(result.text)
+        data = result.json()
         if data["data"]["getRowsPersona"] is None:
             logger.error(
                 "Doesnt exists rut in PH API, status_code: {}, body: {}, username: {}".format(
@@ -154,7 +154,7 @@ class Content(object):
                 "Doesnt exists rut in PH API, status_code: {}, rut: {}".format(
                     result.status_code, rut))
 
-        data = json.loads(result.text)
+        data = result.json()
         if data["data"]["getRowsPersona"] is None:
             logger.error(
                 "Doesnt exists rut in PH API, status_code: {}, body: {}, rut: {}".format(
@@ -574,7 +574,7 @@ class ContentStaff(object):
                     result.request.headers))
             raise Exception("Wrong run {} {}".format(result.status_code, run))
 
-        data = json.loads(result.text)
+        data = result.json()
         username = ""
         if "cuentascorp" in data and len(data["cuentascorp"]) > 0:
             email = data["cuentascorp"]
@@ -1292,7 +1292,7 @@ class EdxLoginExternal(View, Content, ContentStaff):
                     result.request.headers))
             return False
 
-        data = json.loads(result.text)
+        data = result.json()
         if data["data"]["getRowsPersona"] is None:
             return False
         if data['data']['getRowsPersona']['status_code'] != 200:
