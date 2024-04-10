@@ -88,14 +88,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST.NAME",
                                                      'email': [{'email': 'test@test.test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
         result = self.client.get(
             reverse('uchileedxlogin-login:callback'),
             data={
@@ -123,14 +123,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test@test.test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
 
 
         result = self.client.get(
@@ -153,14 +153,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test22@test.test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
         self.assertFalse(EdxLoginUser.objects.filter(run="0112223334").exists())
         result = self.client.get(
             reverse('uchileedxlogin-login:callback'),
@@ -181,8 +181,8 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':None}}))]
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':None}})]
 
 
         result = self.client.get(
@@ -201,14 +201,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code': 400,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code': 400,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test@test.test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
 
 
         result = self.client.get(
@@ -227,8 +227,8 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code': 400,'persona':[]}}}))]
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code': 400,'persona':[]}}})]
 
 
         result = self.client.get(
@@ -247,8 +247,8 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code': 400}}}))]
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code': 400}}})]
 
 
         result = self.client.get(
@@ -268,14 +268,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                             namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test@test.test'}],
-                                                     "indiv_id": "009472337K"}]}}}))]
+                                                     "indiv_id": "009472337K"}]}}})]
         edxlogin_user = EdxLoginUser.objects.get(run="009472337K")
         self.assertFalse(edxlogin_user.have_sso)
         result = self.client.get(
@@ -299,14 +299,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test@test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
 
 
         result = self.client.get(
@@ -328,14 +328,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test555@test.test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
 
 
         result = self.client.get(
@@ -358,14 +358,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('no\n\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test@test.test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
         result = self.client.get(
             reverse('uchileedxlogin-login:callback'),
             data={
@@ -386,8 +386,8 @@ class TestCallbackView(ModuleStoreTestCase):
                 200, ('yes\nwrongname\n').encode('utf-8')), 
             namedtuple("Request",
                 ["status_code",
-                "text"])(200,
-                        json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[]}}}))]
+                "json"])(200,
+                        lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[]}}})]
         result = self.client.get(
             reverse('uchileedxlogin-login:callback'),
             data={
@@ -549,14 +549,14 @@ class TestCallbackView(ModuleStoreTestCase):
                                                    ('yes\ntest.name\n').encode('utf-8')),
                            namedtuple("Request",
                                       ["status_code",
-                                       "text"])(200,
-                                                json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+                                       "json"])(200,
+                                                lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                                                     {"paterno": "TESTLASTNAME",
                                                      "materno": "TESTLASTNAME",
                                                      'pasaporte': [{'usuario':'username'}],
                                                      "nombres": "TEST NAME",
                                                      'email': [{'email': 'test@test.test'}],
-                                                     "indiv_id": "0112223334"}]}}}))]
+                                                     "indiv_id": "0112223334"}]}}})]
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 2)
         result = self.client.get(
@@ -990,14 +990,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1030,14 +1030,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.cl'},{'email': 'test@test2.cl'},{'email': 'test@uchile.cl'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1070,14 +1070,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'student@edx.org'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1110,14 +1110,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'student22@edx2.org'},{'email': 'student@uchile.cl'},{'email': 'student@edx.org'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1150,14 +1150,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'student22@edx2.org'},{'email': 'student2@edx.org'},{'email': 'student55@edx.org'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1190,14 +1190,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'student2@edx.org'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1227,14 +1227,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1264,8 +1264,8 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[]}}}))]
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[]}}})]
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         response = self.client.post(
@@ -1296,8 +1296,8 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':400,'persona':[]}}}))]
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':400,'persona':[]}}})]
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         response = self.client.post(
@@ -1328,8 +1328,8 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':None}}))]
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':None}})]
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         response = self.client.post(
@@ -1361,7 +1361,7 @@ class TestStaffView(ModuleStoreTestCase):
             namedtuple("Request",
             ["status_code",
             "text"])(400,
-            json.dumps({}))]
+            lambda:{})]
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         response = self.client.post(
@@ -1391,14 +1391,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1497,14 +1497,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.staff_user_client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1535,14 +1535,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.instructor_staff_client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1567,14 +1567,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client_instructor.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -1605,14 +1605,14 @@ class TestStaffView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
 
         response = self.client_instructor.post(
             reverse('uchileedxlogin-login:staff'), post_data)
@@ -2060,14 +2060,14 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
         post_data = {
             'datos': 'aa bb cc dd, aux.student2@edx.org, 10-8',
             'course': self.course.id,
@@ -2091,14 +2091,14 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "P123465789"}]}}}))]
+                  "indiv_id": "P123465789"}]}}})]
         post_data = {
             'datos': 'aa bb cc dd, aux.student2@edx.org, P123465789',
             'course': self.course.id,
@@ -2122,14 +2122,14 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test@test.test'}],
-                  "indiv_id": "P123465789"}]}}}))]
+                  "indiv_id": "P123465789"}]}}})]
         post_data = {
             'datos': 'aa bb cc dd, aux.student2@edx.org, p123465789',
             'course': self.course.id,
@@ -2153,14 +2153,14 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'student@edx.org'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
         post_data = {
             'datos': 'aa bb cc dd, student@edx.org, 10-8',
             'course': self.course.id,
@@ -2545,14 +2545,14 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [{'usuario':'username'}],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'instructor_staff@edx.org'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
         post_data = {
             'datos': 'aa bb cc dd, student2@edx.org, 10-8',
             'course': self.course.id,
@@ -2574,14 +2574,14 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[
                  {"paterno": "TESTLASTNAME",
                   "materno": "TESTLASTNAME",
                   'pasaporte': [],
                   "nombres": "TEST NAME",
                   'email': [{'email': 'test2099@edx.org'}],
-                  "indiv_id": "0000000108"}]}}}))]
+                  "indiv_id": "0000000108"}]}}})]
         post_data = {
             'datos': 'aa bb cc dd, test2099@edx.org, 10-8',
             'course': self.course.id,
@@ -2606,8 +2606,8 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':200,'persona':[ ]}}}))]
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':200,'persona':[ ]}}})]
         post_data = {
             'datos': 'aa bb cc dd, test2099@edx.org, 10-8',
             'course': self.course.id,
@@ -2632,8 +2632,8 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':{'status_code':400,'persona':[ ]}}}))]
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':{'status_code':400,'persona':[ ]}}})]
         post_data = {
             'datos': 'aa bb cc dd, test2099@edx.org, 10-8',
             'course': self.course.id,
@@ -2658,8 +2658,8 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(200,
-            json.dumps({'data':{'getRowsPersona':None}}))]
+            "json"])(200,
+            lambda:{'data':{'getRowsPersona':None}})]
         post_data = {
             'datos': 'aa bb cc dd, test2099@edx.org, 10-8',
             'course': self.course.id,
@@ -2684,7 +2684,7 @@ class TestExternalView(ModuleStoreTestCase):
         get.side_effect = [
             namedtuple("Request",
             ["status_code",
-            "text"])(400,json.dumps({}))]
+            "text"])(400,lambda:{})]
         post_data = {
             'datos': 'aa bb cc dd, test2099@edx.org, 10-8',
             'course': self.course.id,
