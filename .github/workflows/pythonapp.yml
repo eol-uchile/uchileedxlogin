@@ -1,21 +1,19 @@
 name: Python application
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/**'
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    branches:
+      - 'master'
+    paths-ignore:
+      - '.github/workflows/**'
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v1
-    - name: Create coverage config file
-      run: |
-        echo -e "[run] \nomit = uchileedxlogin/migrations/*" > .coveragerc
-    - name: Run Tests
-      run: |
-        cd .github/
-        docker-compose run lms /openedx/requirements/uchileedxlogin/.github/test.sh
-    - name: Push changes
-      run: |
-        ./.github/commit.sh ${{ secrets.GITHUB_TOKEN }}
+    uses: eol-uchile/eol_feedback/.github/workflows/pythonapp.yml@master
