@@ -1,27 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from mock import patch, Mock, MagicMock
-from collections import namedtuple
-from django.urls import reverse
-from django.test import TestCase, Client
-from django.test import Client
-from django.conf import settings
-from django.contrib.auth.models import Permission, User
-from django.contrib.contenttypes.models import ContentType
-from urllib.parse import parse_qs
-from opaque_keys.edx.locator import CourseLocator
-from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
-from xmodule.modulestore import ModuleStoreEnum
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
-from common.djangoapps.student.tests.factories import CourseEnrollmentAllowedFactory, UserFactory, CourseEnrollmentFactory
-from common.djangoapps.student.roles import CourseInstructorRole, CourseStaffRole
-import re
+
+# Python Standard Libraries
 import json
 import urllib.parse
 import uuid
-from .views import EdxLoginLoginRedirect, EdxLoginCallback, EdxLoginStaff
+from collections import namedtuple
+
+
+# Installed packages (via pip)
+from common.djangoapps.student.tests.factories import CourseEnrollmentAllowedFactory, UserFactory, CourseEnrollmentFactory
+from common.djangoapps.student.roles import CourseInstructorRole, CourseStaffRole
+from django.conf import settings
+from django.contrib.auth.models import Permission, User
+from django.contrib.contenttypes.models import ContentType
+from django.test import TestCase, Client
+from django.urls import reverse
+from mock import patch
+
+# Edx dependencies
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
+
+# Internal project dependencies
+from .users import create_user_by_data
 from .models import EdxLoginUserCourseRegistration, EdxLoginUser
+from .utils import generate_username
 
 
 class TestRedirectView(TestCase):
@@ -144,7 +149,7 @@ class TestCallbackView(ModuleStoreTestCase):
     @patch('requests.get')
     def test_login_create_user_email_exists(self, get):
         """
-            Test create user normal process when email exists but rut params dont exists on db
+            Test create user normal process when email exists but doc_id params dont exists on db
         """
         # Assert requests.get calls
         get.side_effect = [namedtuple("Request",
@@ -318,9 +323,9 @@ class TestCallbackView(ModuleStoreTestCase):
         self.assertEqual(request.path, '/uchileedxlogin/login/')
 
     @patch('requests.get')
-    def test_login_create_user_email_diff_rut(self, get):
+    def test_login_create_user_email_diff_doc_id(self, get):
         """
-            Test create user when email have different rut param
+            Test create user when email have different doc_id param
         """
         get.side_effect = [namedtuple("Request",
                                       ["status_code",
@@ -397,87 +402,77 @@ class TestCallbackView(ModuleStoreTestCase):
 
     def test_generate_username(self):
         """
-            Test callback generate username normal process
+            Test generate username normal process
         """
         data = {
             'username': 'test.name',
             'apellidoMaterno': 'dd',
             'nombres': 'aa bb',
             'apellidoPaterno': 'cc',
-            'rut': '0112223334',
+            'doc_id': '0112223334',
             'email': 'null'
         }
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
+        email = str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_cc')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_cc_d')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_cc_dd')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_b_cc')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_bb_cc')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_b_cc_d')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_b_cc_dd')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_bb_cc_d')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_bb_cc_dd')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_cc1')
-        data['email'] =  str(uuid.uuid4()) + '@invalid.invalid'
         self.assertEqual(
-            EdxLoginCallback().create_user_by_data(dict(data), False).username,
+            create_user_by_data(dict(data), str(uuid.uuid4()) + '@invalid.invalid', False).username,
             'aa_cc2')
 
     def test_long_name(self):
         """
-            Test callback generate username long name
+            Test generate username long name
         """
         data = {
             'username': 'test.name',
             'apellidoMaterno': 'ff',
             'nombres': 'a2345678901234567890123 bb',
             'apellidoPaterno': '4567890',
-            'rut': '0112223334',
+            'doc_id': '0112223334',
             'email': 'test@test.test'
         }
 
-        self.assertEqual(EdxLoginCallback().create_user_by_data(
-            data, False).username, 'a2345678901234567890123_41')
+        self.assertEqual(create_user_by_data(
+            data, 'test@test.test', False).username, 'a2345678901234567890123_41')
 
     def test_null_lastname(self):
         """
-            Test callback generate username when lastname is null
+            Test generate username when lastname is null
         """
         user_data = {
             "nombres": "Name",
             "apellidoPaterno": None,
             "apellidoMaterno": None}
         self.assertEqual(
-            EdxLoginCallback().generate_username(user_data),
+            generate_username(user_data),
             "Name_")
 
         user_data = {
@@ -485,35 +480,35 @@ class TestCallbackView(ModuleStoreTestCase):
             "apellidoPaterno": "Last",
             "apellidoMaterno": None}
         self.assertEqual(
-            EdxLoginCallback().generate_username(user_data),
+            generate_username(user_data),
             "Name_Last")
 
     def test_whitespace_lastname(self):
         """
-            Test callback generate username when lastname has too much whitespace
+            Test generate username when lastname has too much whitespace
         """
         user_data = {
             "nombres": "Name",
             "apellidoPaterno": "          Last    Last2      ",
             "apellidoMaterno": '    Last2      '}
         self.assertEqual(
-            EdxLoginCallback().generate_username(user_data),
+            generate_username(user_data),
             "Name_Last")
 
     def test_long_name_middle(self):
         """
-            Test callback generate username when long name middle
+            Test generate username when long name middle
         """
         data = {
             'username': 'test.name',
             'apellidoMaterno': 'ff',
             'nombres': 'a23456789012345678901234 bb',
             'apellidoPaterno': '4567890',
-            'rut': '0112223334',
+            'doc_id': '0112223334',
             'email': 'test@test.test'
         }
-        self.assertEqual(EdxLoginCallback().create_user_by_data(
-            data, False).username, 'a234567890123456789012341')
+        self.assertEqual(create_user_by_data(
+            data, 'test@test.test', False).username, 'a234567890123456789012341')
 
     @patch('requests.get')
     def test_callback_enroll_pending_courses(self, get):
@@ -704,7 +699,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': str(self.course.id),
             'modes': 'audit',
             'enroll': '1'
@@ -722,13 +717,13 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 1)
 
-    def test_staff_post_multiple_run(self):
+    def test_staff_post_multiple_doc_id(self):
         """
             Test staff view post with multiple 'run'
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8\n9045578-8\n7193711-9\n19961161-5\n24902414-7',
+            'doc_ids': '10-8\n9045578-8\n7193711-9\n19961161-5\n24902414-7',
             'course': str(self.course.id),
             'modes': 'audit',
             'enroll': '1'
@@ -748,13 +743,13 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 5)
 
-    def test_staff_post_multiple_run_multiple_course(self):
+    def test_staff_post_multiple_doc_id_multiple_course(self):
         """
             Test staff view post with multiple 'run' and multiple courses
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8\n9045578-8\n7193711-9\n19961161-5\n24902414-7',
+            'doc_ids': '10-8\n9045578-8\n7193711-9\n19961161-5\n24902414-7',
             'course': '{}\n{}'.format(str(self.course.id),str(self.course2.id)),
             'modes': 'audit',
             'enroll': '1'
@@ -787,7 +782,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': '',
             'modes': 'audit',
             'enroll': '1'
@@ -806,7 +801,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': 'course-v1:tet+MSS001+2009_2',
             'modes': 'audit',
             'enroll': '1'
@@ -825,7 +820,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': 'course-v1:tet+MSS001+2009_2\ncourse-v1:tet+MSS001+2009_2',
             'modes': 'audit',
             'enroll': '1'
@@ -838,13 +833,13 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
 
-    def test_staff_post_duplicate_multiple_ruts(self):
+    def test_staff_post_duplicate_multiple_doc_ids(self):
         """
-            Test staff view post when ruts is duplicated in form
+            Test staff view post when doc_ids is duplicated in form
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8\n10-8\n10-8\n10-8\n10-8',
+            'doc_ids': '10-8\n10-8\n10-8\n10-8\n10-8',
             'course': 'course-v1:tet+MSS001+2009_2',
             'modes': 'audit',
             'enroll': '1'
@@ -853,7 +848,7 @@ class TestStaffView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("id=\"duplicate_ruts\"" in response._container[0].decode())
+        self.assertTrue("id=\"duplicate_doc_ids\"" in response._container[0].decode())
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
 
@@ -863,7 +858,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': '{}\n{}'.format(str(self.course.id),str(self.course3.id)),
             'modes': 'audit',
             'enroll': '1'
@@ -882,7 +877,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': '{}\n{}'.format(str(self.course.id), 'course-v1:tet+MSS001+2009_2'),
             'modes': 'audit',
             'enroll': '1'
@@ -895,13 +890,13 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
 
-    def test_staff_post_sin_run(self):
+    def test_staff_post_sin_doc_id(self):
         """
-            Test staff view post when 'runs' is empty
+            Test staff view post when 'doc_ids' is empty
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '',
+            'doc_ids': '',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -910,17 +905,17 @@ class TestStaffView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("id=\"no_run\"" in response._container[0].decode())
+        self.assertTrue("id=\"no_doc_id\"" in response._container[0].decode())
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
 
-    def test_staff_post_run_malo(self):
+    def test_staff_post_doc_id_malo(self):
         """
-            Test staff view post when 'runs' is wrong
+            Test staff view post when 'doc_ids' is wrong
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '12345678-9',
+            'doc_ids': '12345678-9',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -929,7 +924,7 @@ class TestStaffView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("id=\"run_malos\"" in response._container[0].decode())
+        self.assertTrue("id=\"invalid_doc_ids\"" in response._container[0].decode())
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
 
@@ -939,7 +934,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '9472337-k',
+            'doc_ids': '9472337-k',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -951,7 +946,7 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_enroll\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_enroll\"" in response._container[0].decode())
 
     def test_staff_post_exits_user_no_enroll(self):
         """
@@ -959,7 +954,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '9472337-k',
+            'doc_ids': '9472337-k',
             'course': self.course.id,
             'modes': 'audit'
         }
@@ -971,7 +966,7 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
         self.assertTrue(
-            "id=\"run_saved_enroll_no_auto\"" in response._container[0].decode())
+            "id=\"doc_id_saved_enroll_no_auto\"" in response._container[0].decode())
 
     @patch('requests.get')
     def test_staff_post_force_enroll(self, get):
@@ -980,7 +975,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1007,8 +1002,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_enroll\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_enroll\"" not in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.run, "0000000108")
         self.assertEqual(edxlogin_user.user.email, "test@test.test")
@@ -1020,7 +1015,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1047,8 +1042,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_enroll\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_enroll\"" not in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.run, "0000000108")
         self.assertEqual(edxlogin_user.user.email, "test@uchile.cl")
@@ -1060,7 +1055,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1087,8 +1082,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_enroll\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_enroll\"" not in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.run, "0000000108")
         self.assertEqual(edxlogin_user.user.email, "student@edx.org")
@@ -1100,7 +1095,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1127,8 +1122,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_enroll\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_enroll\"" not in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.run, "0000000108")
         self.assertEqual(edxlogin_user.user.email, "student@edx.org")
@@ -1140,7 +1135,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1167,20 +1162,20 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_enroll\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_enroll\"" not in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.run, "0000000108")
         self.assertTrue(edxlogin_user.user.email in ['student22@edx2.org', 'student55@edx.org'])
 
     @patch('requests.get')
-    def test_staff_post_force_enroll_email_diff_rut(self, get):
+    def test_staff_post_force_enroll_email_diff_doc_id(self, get):
         """
             Test staff view post with force enroll when fail to get data from ph api
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1205,8 +1200,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" not in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_pending\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_pending\"" in response._container[0].decode())
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 1)
         self.assertFalse(EdxLoginUser.objects.filter(run="0000000108").exists())
 
@@ -1217,7 +1212,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1242,8 +1237,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" not in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_pending\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_pending\"" in response._container[0].decode())
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 1)
         self.assertFalse(EdxLoginUser.objects.filter(run="0000000108").exists())
 
@@ -1254,7 +1249,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1274,8 +1269,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" not in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_pending\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_pending\"" in response._container[0].decode())
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 1)
         self.assertFalse(EdxLoginUser.objects.filter(run="0000000108").exists())
 
@@ -1286,7 +1281,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1306,8 +1301,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" not in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_pending\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_pending\"" in response._container[0].decode())
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 1)
         self.assertFalse(EdxLoginUser.objects.filter(run="0000000108").exists())
 
@@ -1318,7 +1313,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1338,8 +1333,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" not in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_pending\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_pending\"" in response._container[0].decode())
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 1)
         self.assertFalse(EdxLoginUser.objects.filter(run="0000000108").exists())
 
@@ -1350,7 +1345,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1370,8 +1365,8 @@ class TestStaffView(ModuleStoreTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force\"" not in response._container[0].decode())
-        self.assertTrue("id=\"run_saved_pending\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force\"" not in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_pending\"" in response._container[0].decode())
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 1)
         self.assertFalse(EdxLoginUser.objects.filter(run="0000000108").exists())
 
@@ -1382,7 +1377,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'force': '1'
@@ -1407,9 +1402,9 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(EdxLoginUserCourseRegistration.objects.count(), 0)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_force_no_auto\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_force_no_auto\"" in response._container[0].decode())
         self.assertTrue(
-            "id=\"run_saved_enroll_no_auto\"" not in response._container[0].decode())
+            "id=\"doc_id_saved_enroll_no_auto\"" not in response._container[0].decode())
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.run, "0000000108")
         self.assertEqual(edxlogin_user.user.email, "test@test.test")
@@ -1421,7 +1416,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1441,14 +1436,14 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 1)
         self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/staff/')
-        self.assertTrue("id=\"run_saved_pending\"" in response._container[0].decode())
+        self.assertTrue("id=\"doc_id_saved_pending\"" in response._container[0].decode())
 
     def test_staff_post_no_action_params(self):
         """
             Test staff view post without action
         """
         post_data = {
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -1467,7 +1462,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "test",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -1487,7 +1482,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1516,7 +1511,7 @@ class TestStaffView(ModuleStoreTestCase):
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
         r = json.loads(response._container[0].decode())
-        self.assertEqual(r['run_saved']['run_saved_force'], "TEST_TESTLASTNAME - 0000000108")        
+        self.assertEqual(r['doc_id_saved']['doc_id_saved_force'], "TEST_TESTLASTNAME - 0000000108")        
         self.assertEqual(aux.user.email, "test@test.test")
 
     @patch('requests.get')
@@ -1526,7 +1521,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -1558,7 +1553,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1587,7 +1582,7 @@ class TestStaffView(ModuleStoreTestCase):
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
         self.assertEqual(aux.user.email, "test@test.test")
         r = json.loads(response._container[0].decode())
-        self.assertEqual(r['run_saved']['run_saved_force'], "TEST_TESTLASTNAME - 0000000108")
+        self.assertEqual(r['doc_id_saved']['doc_id_saved_force'], "TEST_TESTLASTNAME - 0000000108")
 
     @patch('requests.get')
     def test_staff_post_instructor_multiple_course(self, get):
@@ -1596,7 +1591,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': '{}\n{}'.format(str(self.course.id), str(self.course2.id)),
             'modes': 'audit',
             'enroll': '1',
@@ -1625,7 +1620,7 @@ class TestStaffView(ModuleStoreTestCase):
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
         self.assertEqual(aux.user.email, "test@test.test")
         r = json.loads(response._container[0].decode())
-        self.assertEqual(r['run_saved']['run_saved_force'], "TEST_TESTLASTNAME - 0000000108")
+        self.assertEqual(r['doc_id_saved']['doc_id_saved_force'], "TEST_TESTLASTNAME - 0000000108")
 
     def test_staff_post_unenroll_no_db(self):
         """
@@ -1633,7 +1628,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "unenroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
         }
@@ -1643,7 +1638,7 @@ class TestStaffView(ModuleStoreTestCase):
         r = json.loads(response._container[0].decode())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(r['run_unenroll_no_exists'], ['0000000108'])
+        self.assertEqual(r['doc_id_unenroll_no_exists'], ['0000000108'])
 
     def test_staff_post_unenroll_edxlogincourse(self):
         """
@@ -1651,7 +1646,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "unenroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
         }
@@ -1668,7 +1663,7 @@ class TestStaffView(ModuleStoreTestCase):
             reverse('uchileedxlogin-login:staff'), post_data)
         r = json.loads(response._container[0].decode())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(r['run_unenroll'], ['0000000108'])
+        self.assertEqual(r['doc_id_unenroll'], ['0000000108'])
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
 
@@ -1678,7 +1673,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "unenroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
         }
@@ -1688,7 +1683,7 @@ class TestStaffView(ModuleStoreTestCase):
         r = json.loads(response._container[0].decode())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(r['run_unenroll'], ['0000000108'])
+        self.assertEqual(r['doc_id_unenroll'], ['0000000108'])
 
     def test_staff_post_unenroll_enrollment_multiple_course(self):
         """
@@ -1696,7 +1691,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "unenroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': '{}\n{}'.format(str(self.course.id), str(self.course2.id)),
             'modes': 'audit',
         }
@@ -1706,7 +1701,7 @@ class TestStaffView(ModuleStoreTestCase):
         r = json.loads(response._container[0].decode())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(r['run_unenroll'], ['0000000108'])
+        self.assertEqual(r['doc_id_unenroll'], ['0000000108'])
 
     def test_staff_post_unenroll_allowed(self):
         """
@@ -1714,7 +1709,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "unenroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
         }
@@ -1728,7 +1723,7 @@ class TestStaffView(ModuleStoreTestCase):
         r = json.loads(response._container[0].decode())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(r['run_unenroll'], ['0000000108'])
+        self.assertEqual(r['doc_id_unenroll'], ['0000000108'])
 
     def test_staff_post_unenroll_student(self):
         """
@@ -1736,7 +1731,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "unenroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
         }
@@ -1753,7 +1748,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "enroll",
-            'runs': '10-8',
+            'doc_ids': '10-8',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1',
@@ -1771,7 +1766,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': 'P12345',
+            'doc_ids': 'P12345',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -1795,7 +1790,7 @@ class TestStaffView(ModuleStoreTestCase):
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': 'CG12345678',
+            'doc_ids': 'CG12345678',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -1815,11 +1810,11 @@ class TestStaffView(ModuleStoreTestCase):
 
     def test_staff_post_wrong_passport(self):
         """
-            Test staff view post when 'runs' is wrong
+            Test staff view post when 'doc_ids' is wrong
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': 'P213',
+            'doc_ids': 'P213',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -1828,17 +1823,17 @@ class TestStaffView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("id=\"run_malos\"" in response._container[0].decode())
+        self.assertTrue("id=\"invalid_doc_ids\"" in response._container[0].decode())
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
 
     def test_staff_post_wrong_CG(self):
         """
-            Test staff view post when 'runs' is wrong
+            Test staff view post when 'doc_ids' is wrong
         """
         post_data = {
             'action': "staff_enroll",
-            'runs': 'CG128',
+            'doc_ids': 'CG128',
             'course': self.course.id,
             'modes': 'audit',
             'enroll': '1'
@@ -1847,7 +1842,7 @@ class TestStaffView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:staff'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("id=\"run_malos\"" in response._container[0].decode())
+        self.assertTrue("id=\"invalid_doc_ids\"" in response._container[0].decode())
         self.assertEqual(
             EdxLoginUserCourseRegistration.objects.all().count(), 0)
     
@@ -1984,7 +1979,7 @@ class TestExternalView(ModuleStoreTestCase):
         request = response.request
         self.assertEqual(response.status_code, 404)
 
-    def test_external_post_without_run(self):
+    def test_external_post_without_doc_id(self):
         """
             Test external view post without run and email no exists in db platform
         """
@@ -2002,7 +1997,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertFalse('id="action_send"' in response._container[0].decode())
         self.assertTrue(User.objects.filter(email="aux.student2@edx.org").exists())
 
-    def test_external_post_without_run_multiple_course(self):
+    def test_external_post_without_doc_id_multiple_course(self):
         """
             Test external view post without run and email no exists in db platform with multiple course
         """
@@ -2020,7 +2015,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertFalse('id="action_send"' in response._container[0].decode())
         self.assertTrue(User.objects.filter(email="aux.student2@edx.org").exists())
 
-    def test_external_post_without_run_exists_email(self):
+    def test_external_post_without_doc_id_exists_email(self):
         """
             Test external view post without run and email exists in db platform
         """
@@ -2036,7 +2031,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="lista_saved"' in response._container[0].decode())
 
-    def test_external_post_without_run_exists_email_multiple_course(self):
+    def test_external_post_without_doc_id_exists_email_multiple_course(self):
         """
             Test external view post without run and email exists in db platform with multiple course
         """
@@ -2053,7 +2048,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertTrue('id="lista_saved"' in response._container[0].decode())
 
     @patch('requests.get')
-    def test_external_post_with_run(self, get):
+    def test_external_post_with_doc_id(self, get):
         """
             Test external view post with run and (run,email) no exists in db platform
         """
@@ -2146,7 +2141,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(edxlogin_user.user.email, "aux.student2@edx.org")
 
     @patch('requests.get')
-    def test_external_post_with_run_exists_email(self, get):
+    def test_external_post_with_doc_id_exists_email(self, get):
         """
             Test external view post with run,email exists, run no exists in db platform
         """
@@ -2176,7 +2171,7 @@ class TestExternalView(ModuleStoreTestCase):
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertEqual(edxlogin_user.user.email, "student@edx.org")
 
-    def test_external_post_with_exists_run(self):
+    def test_external_post_with_exists_doc_id(self):
         """
             Test external view post when run exists in db platform
         """
@@ -2191,7 +2186,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="lista_saved"' in response._container[0].decode())
 
-    def test_external_post_without_run_multiple_data(self):
+    def test_external_post_without_doc_id_multiple_data(self):
         """
             Test external view post without run, multiple data
         """
@@ -2347,7 +2342,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="wrong_data"' in response._container[0].decode())
 
-    def test_external_post_wrong_run(self):
+    def test_external_post_wrong_doc_id(self):
         """
             Test external view post with wrong run
         """
@@ -2362,7 +2357,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('id="wrong_data"' in response._container[0].decode())
 
-    def test_external_post_duplicate_multiple_run(self):
+    def test_external_post_duplicate_multiple_doc_id(self):
         """
             Test external view post with wrong run
         """
@@ -2375,7 +2370,7 @@ class TestExternalView(ModuleStoreTestCase):
         response = self.client.post(
             reverse('uchileedxlogin-login:external'), post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('id="duplicate_rut"' in response._container[0].decode())
+        self.assertTrue('id="duplicate_doc_id"' in response._container[0].decode())
 
     def test_external_post_duplicate_multiple_email(self):
         """
@@ -2467,7 +2462,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertTrue(User.objects.filter(username='student3', email="student4@student.cl").exists())
         self.assertTrue(User.objects.filter(username='student4', email="student5@student.cl").exists())
 
-    def test_external_post_without_run_name_with_special_character_2(self):
+    def test_external_post_without_doc_id_name_with_special_character_2(self):
         """
             Test external view post, name with special characters
         """
@@ -2486,7 +2481,7 @@ class TestExternalView(ModuleStoreTestCase):
         user_created_2 = User.objects.get(email="hola@mundo.com")
         self.assertEqual(user_created_2.username, 'hola__mundo')
 
-    def test_external_post_without_run_name_with_special_character(self):
+    def test_external_post_without_doc_id_name_with_special_character(self):
         """
             Test external view post, name with special characters
         """
@@ -2538,9 +2533,9 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertTrue('id="action_send"' in response._container[0].decode())
 
     @patch('requests.get')
-    def test_external_post_with_run_email_diff_rut(self, get):
+    def test_external_post_with_doc_id_email_diff_doc_id(self, get):
         """
-            Test external view post with run, when email already have anther rut params
+            Test external view post with doc_id, when email already have another doc_id params
         """
         get.side_effect = [
             namedtuple("Request",
@@ -2567,7 +2562,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertFalse(EdxLoginUser.objects.filter(run="0000000108").exists())
 
     @patch('requests.get')
-    def test_external_post_with_run_fail_get_data(self, get):
+    def test_external_post_with_doc_id_fail_get_data(self, get):
         """
             Test external view post with run, when fail to get data from ph api
         """
@@ -2599,7 +2594,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(edxlogin_user.user.email, 'test2099@edx.org')
 
     @patch('requests.get')
-    def test_external_post_with_run_fail_get_data_2(self, get):
+    def test_external_post_with_doc_id_fail_get_data_2(self, get):
         """
             Test external view post with run, when fail to get data from ph api
         """
@@ -2625,7 +2620,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(edxlogin_user.user.email, 'test2099@edx.org')
 
     @patch('requests.get')
-    def test_external_post_with_run_fail_get_data_3(self, get):
+    def test_external_post_with_doc_id_fail_get_data_3(self, get):
         """
             Test external view post with run, when fail to get data from ph api
         """
@@ -2651,7 +2646,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(edxlogin_user.user.email, 'test2099@edx.org')
 
     @patch('requests.get')
-    def test_external_post_with_run_fail_get_data_4(self, get):
+    def test_external_post_with_doc_id_fail_get_data_4(self, get):
         """
             Test external view post with run, when fail to get data from ph api
         """
@@ -2677,7 +2672,7 @@ class TestExternalView(ModuleStoreTestCase):
         self.assertEqual(edxlogin_user.user.email, 'test2099@edx.org')
 
     @patch('requests.get')
-    def test_external_post_with_run_fail_get_data_5(self, get):
+    def test_external_post_with_doc_id_fail_get_data_5(self, get):
         """
             Test external view post with run, when fail to get data from ph api
         """

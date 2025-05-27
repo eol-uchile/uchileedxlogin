@@ -43,13 +43,6 @@
     margin-right: 11px;
 }
 </style>
-<div class="row">
-    <div class="col-md-4">       
-        <a href="export/">
-            <button style="text-shadow: none; border-color:white; background-color: #0075b4; background-image: none; display:block;" >Exportar Usuario</button>
-        </a>
-    </div>
-</div>
 <h1>Inscripción de Alumnos</h1>
     <div style="text-align: center">
         <form method="POST">
@@ -57,58 +50,58 @@
            <input type="hidden" name="action" value="staff_enroll"/>
             % if context.get('saved', UNDEFINED) == 'saved':
                 <p style="color:rgb(56, 181, 197); margin-bottom: 15px;">Datos Guardados Correctamente.</p>
-                % if context.get('run_saved', UNDEFINED) is not UNDEFINED:
-                    % if run_saved['run_saved_force'] != "" or run_saved['run_saved_force_no_auto'] != "":
+                % if context.get('doc_id_saved', UNDEFINED) is not UNDEFINED:
+                    % if doc_id_saved['doc_id_saved_force'] != "" or doc_id_saved['doc_id_saved_force_no_auto'] != "":
                         <p style="color:rgb(56, 181, 197); margin-bottom: 15px;">
                             <b>Usuarios Creados e Inscritos:</b></br>
                             <% 
-                                run_saved_force = run_saved['run_saved_force'].split('/')
-                                run_saved_force_no_auto = run_saved['run_saved_force_no_auto'].split('/')
+                                doc_id_saved_force = doc_id_saved['doc_id_saved_force'].split('/')
+                                doc_id_saved_force_no_auto = doc_id_saved['doc_id_saved_force_no_auto'].split('/')
                             %>
-                            <span id="run_saved_force">
-                                %for run in run_saved_force:
-                                    ${run}</br>
+                            <span id="doc_id_saved_force">
+                                %for doc_id in doc_id_saved_force:
+                                    ${doc_id}</br>
                                 %endfor
                             </span></br>
-                            <span id="run_saved_force_no_auto">
-                                %for run in run_saved_force_no_auto:
-                                    ${run}</br>
+                            <span id="doc_id_saved_force_no_auto">
+                                %for doc_id in doc_id_saved_force_no_auto:
+                                    ${doc_id}</br>
                                 %endfor
                             </span>
                         </p>
                     % endif
                    
-                    % if run_saved['run_saved_pending'] != "":
-                        <p id="run_saved_pending" style="color:rgb(56, 181, 197); margin-bottom: 15px;">Runs Pendientes: ${run_saved['run_saved_pending']}</p>
+                    % if doc_id_saved['doc_id_saved_pending'] != "":
+                        <p id="doc_id_saved_pending" style="color:rgb(56, 181, 197); margin-bottom: 15px;">Documentos de ID Pendientes: ${doc_id_saved['doc_id_saved_pending']}</p>
                     % endif
-                    % if run_saved['run_saved_enroll'] != "" or run_saved['run_saved_enroll_no_auto'] != "":
-                        <p id="run_saved_enroll" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
+                    % if doc_id_saved['doc_id_saved_enroll'] != "" or doc_id_saved['doc_id_saved_enroll_no_auto'] != "":
+                        <p id="doc_id_saved_enroll" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
                             <b>Usuarios Inscritos:</b></br>
                             <% 
-                                run_saved_enroll = run_saved['run_saved_enroll'].split('/')
-                                run_saved_enroll_no_auto = run_saved['run_saved_enroll_no_auto'].split('/')
+                                doc_id_saved_enroll = doc_id_saved['doc_id_saved_enroll'].split('/')
+                                doc_id_saved_enroll_no_auto = doc_id_saved['doc_id_saved_enroll_no_auto'].split('/')
                             %>
-                            <span id="run_saved_enroll">
-                                %for run in run_saved_enroll:
-                                    ${run}</br>
+                            <span id="doc_id_saved_enroll">
+                                %for doc_id in doc_id_saved_enroll:
+                                    ${doc_id}</br>
                                 %endfor
                             </span></br>
-                            <span id="run_saved_enroll_no_auto">
-                                %for run in run_saved_enroll_no_auto:
-                                    ${run}</br>
+                            <span id="doc_id_saved_enroll_no_auto">
+                                %for doc_id in doc_id_saved_enroll_no_auto:
+                                    ${doc_id}</br>
                                 %endfor
                             </span>
                         </p>
                     % endif
                 % endif
             % endif
-            % if context.get('run_malos', UNDEFINED) is not UNDEFINED:
-                <p id="run_malos" style="color:firebrick; margin-bottom: 15px;">Estos Runs están incorrectos: ${run_malos}.</p>
+            % if context.get('invalid_doc_ids', UNDEFINED) is not UNDEFINED:
+                <p id="invalid_doc_ids" style="color:firebrick; margin-bottom: 15px;">Estos Documentos de ID están incorrectos: ${invalid_doc_ids}.</p>
             % endif
-            % if context.get('duplicate_ruts', UNDEFINED) is not UNDEFINED:
-                <p id="duplicate_ruts" style="color:firebrick; margin-bottom: 15px;">
-                    <b>Estos ruts están duplicados en el formulario: </b></br>
-                    %for data in duplicate_ruts:
+            % if context.get('duplicate_doc_ids', UNDEFINED) is not UNDEFINED:
+                <p id="duplicate_doc_ids" style="color:firebrick; margin-bottom: 15px;">
+                    <b>Estos Documentos de ID están duplicados en el formulario: </b></br>
+                    %for data in duplicate_doc_ids:
                         ${data}</br>
                     %endfor
                 </p>
@@ -121,8 +114,8 @@
                     %endfor
                 </p>
             % endif
-            % if context.get('no_run', UNDEFINED) is not UNDEFINED:
-                <p id="no_run" style="color:firebrick; margin-bottom: 15px;">Falta agregar run.</p>
+            % if context.get('no_doc_id', UNDEFINED) is not UNDEFINED:
+                <p id="no_doc_id" style="color:firebrick; margin-bottom: 15px;">Falta agregar Documento de ID.</p>
             % endif            
             % if context.get('curso2', UNDEFINED) is not UNDEFINED:
                 <p id="curso2" style="color:firebrick; margin-bottom: 15px;">Falta agregar curso.</p>
@@ -148,12 +141,12 @@
                 <p style="color:firebrick; margin-bottom: 15px;">La acción es incorrecta.</p>
             % endif
             <div class="form-group" style="margin: 15px 15px;">
-                <label for="runs" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">RUN(s):</label>
+                <label for="doc_ids" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">Documento(s) de ID:</label>
                 
-                % if context.get('runs', UNDEFINED) is not UNDEFINED:
-                    <textarea style="min-height: 40px;min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" type="text" name='runs' id="runs" placeholder="12345678-k&#10;12345678-k">${runs}</textarea>                    
+                % if context.get('doc_ids', UNDEFINED) is not UNDEFINED:
+                    <textarea style="min-height: 40px;min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" type="text" name='doc_ids' id="doc_ids" placeholder="12345678-k&#10;P1234567">${doc_ids}</textarea>                    
                 % else:
-                    <textarea style="min-height: 40px;min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" type="text" name='runs' id="runs" placeholder="12345678-k&#10;12345678-k"></textarea>
+                    <textarea style="min-height: 40px;min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" type="text" name='doc_ids' id="doc_ids" placeholder="12345678-k&#10;P1234567"></textarea>
                 % endif
                 
             </div>

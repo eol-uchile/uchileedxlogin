@@ -8,13 +8,13 @@ function limitTextarea(textarea, maxLines) {
   }
 }
 function enrollrun(e){      
-  var runs = document.getElementById("student-run");//value
+  var doc_ids = document.getElementById("student-run");//value
   var csrf = document.getElementById("csrf");//value
   var role = document.getElementById("role-run"); //value
   var course_id = document.getElementById("course_id"); //value
   var auto = true; //auto-enroll
   
-  if (!runs.value) {
+  if (!doc_ids.value) {
       fail_with_error('El campo de Rut no pude dejarse vacío.');
       return false;
   }
@@ -25,7 +25,7 @@ function enrollrun(e){
   var sendData = {
       csrfmiddlewaretoken: csrf.value,
       action: e.dataset.action,
-      runs: runs.value,
+      doc_ids: doc_ids.value,
       modes: role.value,
       course: course_id.value,
       enroll: auto,
@@ -45,10 +45,10 @@ function enrollrun(e){
   });        
 }
 clear_input = function() {
-  var runs = document.getElementById("student-run");//value
+  var doc_ids = document.getElementById("student-run");//value
   var role = document.getElementById("role-run"); //value
 
-  runs.value='';
+  doc_ids.value='';
   role.value="honor"
 };
 
@@ -62,10 +62,10 @@ fail_with_error = function(msg) {
 };
 validate_error = function(data) {
   var aux_error = "";
-  if ("run_malos" in data){          
-    aux_error = aux_error + "Estos Ruts están incorrectos: " + data.run_malos + "</br>";
+  if ("invalid_doc_ids" in data){          
+    aux_error = aux_error + "Estos Ruts están incorrectos: " + data.invalid_doc_ids + "</br>";
   }
-  if ("no_run" in data){
+  if ("no_doc_id" in data){
     aux_error = aux_error + "Falta agregar rut.</br>";
   }
   if ("curso2" in data){
@@ -83,9 +83,9 @@ validate_error = function(data) {
       aux_error = aux_error + course_id + "</br>";
     });
   }
-  if ("duplicate_ruts" in data){
+  if ("duplicate_doc_ids" in data){
     aux_error = aux_error + "Estos ruts están duplicados en el formulario:</br>";
-    data.duplicate_ruts.forEach(rut => {
+    data.duplicate_doc_ids.forEach(rut => {
       aux_error = aux_error + rut + "</br>";
     });
   }
@@ -111,36 +111,36 @@ validate_success = function(data) {
   var aux_success = "";
   
   if ("saved" in data && data.saved == "saved"){          
-    if (data.run_saved['run_saved_pending'] != ""){
-      aux_success = aux_success + "No se ha encontrado ninguna cuenta institucional de los siguientes ruts: " + data.run_saved['run_saved_pending'] + "</br>";
+    if (data.doc_id_saved['doc_id_saved_pending'] != ""){
+      aux_success = aux_success + "No se ha encontrado ninguna cuenta institucional de los siguientes ruts: " + data.doc_id_saved['doc_id_saved_pending'] + "</br>";
       aux_success = aux_success + "Al momento de registrarse, automaticamente se inscribirán en el curso.</br></br>";
     }
-    if (data.run_saved['run_saved_enroll'] != "" || data.run_saved['run_saved_force'] != ""){
-      var run_saved_enroll = data.run_saved['run_saved_enroll'].split("/")
-      var run_saved_force = data.run_saved['run_saved_force'].split("/")
+    if (data.doc_id_saved['doc_id_saved_enroll'] != "" || data.doc_id_saved['doc_id_saved_force'] != ""){
+      var doc_id_saved_enroll = data.doc_id_saved['doc_id_saved_enroll'].split("/")
+      var doc_id_saved_force = data.doc_id_saved['doc_id_saved_force'].split("/")
 
       aux_success = aux_success + "<b>Usuarios inscritos correctamente: </b></br>";
-      run_saved_enroll.forEach(run => {
-        aux_success = aux_success + run + "</br>";
+      doc_id_saved_enroll.forEach(doc_id => {
+        aux_success = aux_success + doc_id + "</br>";
       });
-      run_saved_force.forEach(run => {
-        aux_success = aux_success + run + "</br>";
+      doc_id_saved_force.forEach(doc_id => {
+        aux_success = aux_success + doc_id + "</br>";
       });
     }
     clear_input();
   }
   if ("saved" in data && data.saved == "unenroll"){
-    if (data.run_unenroll.length > 0 ){
+    if (data.doc_id_unenroll.length > 0 ){
       aux_success = aux_success + "<b>Ruts desinscrito correctamente: </b></br>";
-      data.run_unenroll.forEach(run => {
-          aux_success = aux_success + run + "</br>";
+      data.doc_id_unenroll.forEach(doc_id => {
+          aux_success = aux_success + doc_id + "</br>";
       });
     }
 
-    if (data.run_unenroll_no_exists.length > 0){
+    if (data.doc_id_unenroll_no_exists.length > 0){
       aux_success = aux_success + "<b>Los siguientes ruts no estaban inscritos en el curso: </b></br>";
-      data.run_unenroll_no_exists.forEach(run => {
-        aux_success = aux_success + run + "</br>";
+      data.doc_id_unenroll_no_exists.forEach(doc_id => {
+        aux_success = aux_success + doc_id + "</br>";
       });
     }
     clear_input();
