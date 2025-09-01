@@ -24,9 +24,10 @@ from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
 # Internal project dependencies
-from .users import create_user_by_data
+from .users import create_edxloginuser, create_user_by_data
 from .models import EdxLoginUserCourseRegistration, EdxLoginUser
-from .utils import generate_username
+from .services.utils import get_document_type, validate_rut
+from .utils import generate_username, get_user_from_emails, select_email, validate_all_doc_id_types
 
 
 class TestRedirectView(TestCase):
@@ -2695,3 +2696,168 @@ class TestExternalView(ModuleStoreTestCase):
         edxlogin_user = EdxLoginUser.objects.get(run="0000000108")
         self.assertFalse(edxlogin_user.have_sso)
         self.assertEqual(edxlogin_user.user.email, 'test2099@edx.org')
+
+
+class TestInterfaceUtils(ModuleStoreTestCase):    
+    def test_validate_rut_valid_rut(self):
+        """
+            Test validate_rut for some valid ruts
+        """
+        is_valid_rut = validate_rut("17.502.502-K")
+        self.assertFalse(is_valid_rut)
+
+        is_valid_rut = validate_rut("17.502.5022")
+        self.assertTrue(is_valid_rut)
+
+        is_valid_rut_2 = validate_rut("18.125.751-2")
+        self.assertTrue(is_valid_rut_2)
+
+        is_valid_rut_3 = validate_rut("18125713-K")
+        self.assertTrue(is_valid_rut_3)
+
+
+    def test_validate_rut_invalid_rut(self):
+        """
+            Test validate_rut for some invalid ruts
+        """
+        is_valid_rut = validate_rut("17.502.502-K")
+        self.assertFalse(is_valid_rut)
+
+        is_valid_rut_2 = validate_rut("18.125.751-7")
+        self.assertFalse(is_valid_rut_2)
+
+        is_valid_rut_3 = validate_rut("18125713-5")
+        self.assertFalse(is_valid_rut_3)
+
+    def test_get_document_type_passport(self):
+        """
+            Test get_document_type for passport document_id
+        """
+        self.assertEqual(get_document_type('P1234567'), 'passport')
+        self.assertEqual(get_document_type('P1234567-K'), 'passport')
+
+    def test_get_document_type_cg(self):
+        """
+            Test get_document_type for cg document_id
+        """
+        self.assertEqual(get_document_type('CG1234567'), 'cg')
+        self.assertEqual(get_document_type('CG512331231'), 'cg')
+
+    def test_get_document_type_rut(self):
+        """
+            Test get_document_type for rut document_id
+        """
+        self.assertEqual(get_document_type('17.502.502-K'), 'rut')
+        self.assertEqual(get_document_type('18.125.751-2'), 'rut')
+        self.assertEqual(get_document_type('234567'), 'rut')
+
+
+class TestUtils(ModuleStoreTestCase):
+    def setUp(self):
+        super(TestUtils, self).setUp()
+        self.user = UserFactory(
+                username='testuser1',
+                password='12345',
+                email='test@test.com')
+        self.user2 = UserFactory(
+                username='testuser2',
+                password='12345',
+                email='test2@uchile.cl',
+                is_staff=True)
+
+    def test_select_email_empty(self):
+        """
+            Test select_email for an empty email list
+        """
+        self.assertEqual(select_email([]),'')
+
+    def test_select_email_unused_email(self):
+        """
+            Test select_email for an email list with one used and one unused email
+        """
+        self.assertEqual(select_email(['test@test.com', 'unused_mail@test.com']), 'unused_mail@test.com')
+
+    def test_select_email_all_emails_used(self):
+        """
+            Test select_email for a list with all emails already in use
+        """
+        self.assertEqual(select_email(['test@test.com', 'test2@uchile.cl']), '')
+
+    def test_select_email_unused_uchile_email(self):
+        """
+            Test select_email for a list with unused mails, including a @uchile.cl one
+        """
+        self.assertEqual(select_email(['unused_test@test.com', 'unused@uchile.cl']), 'unused@uchile.cl')
+
+    def test_get_user_from_emails(self):
+        """
+            Test get_user_from_emails for an empty email list
+        """
+        self.assertEqual(get_user_from_emails(['test@test.com']), self.user)
+
+    def test_get_user_from_emails_uchile(self):
+        """
+            Test get_user_from_emails for an email list including a @uchile.cl one
+        """
+        self.assertEqual(get_user_from_emails(['test@test.com', 'test2@uchile.cl']), self.user2)
+
+    def test_get_user_from_emails_linked_mails(self):
+        """
+            Test get_user_from_emails when all emails in the list are already linked
+        """
+        create_edxloginuser(self.user, False, '009472337K')
+        create_edxloginuser(self.user2, False, '0094723373')
+        self.assertEqual(get_user_from_emails(['test@test.com', 'test2@uchile.cl']), None)
+
+    def test_validate_all_doc_id_types_valid_passport(self,):
+        """
+            Test validate_all_id_types for valid passports
+        """
+        self.assertTrue(validate_all_doc_id_types('P1234567'))
+        # Min passport length
+        self.assertTrue(validate_all_doc_id_types('P12345' ))
+        # Max passport length
+        self.assertTrue(validate_all_doc_id_types('P' + '1' * 20))
+
+    def test_validate_all_doc_id_types_invalid_passport(self):
+        """
+            Test validate_all_id_types for invalid passports
+        """
+        self.assertFalse(validate_all_doc_id_types('P1234'))
+        self.assertFalse(validate_all_doc_id_types('P' + '1' * 21))
+
+    def test_validate_all_doc_id_types_valid_cg(self):
+        """
+            Test validate_all_id_types for valid cg
+        """
+        self.assertTrue(validate_all_doc_id_types('CG12345678'))
+
+    def test_validate_all_doc_id_types_invalid_cg(self):
+        """
+            Test validate_all_id_types for invalid cg
+        """
+        self.assertFalse(validate_all_doc_id_types('CG1234567'))
+        self.assertFalse(validate_all_doc_id_types('CG123456789'))
+
+    @patch('uchileedxlogin.utils.validate_rut')
+    def test_validate_all_doc_id_types_valid_rut(self, mock_validate_rut):
+        """
+            Test validate_all_id_types for valid rut
+        """
+        mock_validate_rut.return_value = True
+        self.assertTrue(validate_all_doc_id_types('12.345.678-9'))
+
+    @patch('uchileedxlogin.utils.validate_rut')
+    def test_validate_all_doc_id_types_invalid_rut(self, mock_validate_rut):
+        """
+            Test validate_all_id_types for invalid rut
+        """
+        mock_validate_rut.return_value = False
+        self.assertFalse(validate_all_doc_id_types('12.345.678-0'))
+
+    def test_validate_all_doc_id_types_invalid_input(self):
+        """
+            Test validate_all_id_types for invalid input
+        """
+        self.assertFalse(validate_all_doc_id_types(11111))
+        self.assertFalse(validate_all_doc_id_types(''))
