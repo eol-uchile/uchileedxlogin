@@ -77,11 +77,11 @@ p {
             % if context.get('lista_saved', UNDEFINED) is not UNDEFINED:
                 <p id="lista_saved" style="color:rgb(56, 181, 197); margin-bottom: 15px;">
                     <b>Usuarios Creados y/o Inscritos:</b></br>
-                    %for run in lista_saved:
-                        % if 'email2' in run:
-                            El correo asociado/inscrito del '${run['rut']}' es ${run['email2']}
+                    %for doc_id in lista_saved:
+                        % if 'email2' in doc_id:
+                            El correo asociado/inscrito del '${doc_id['doc_id']}' es ${doc_id['email2']}
                         % else:
-                            ${run['rut']}, ${run['email']}
+                            ${doc_id['doc_id']}, ${doc_id['email']}
                         % endif
                         </br>
                     %endfor
@@ -112,10 +112,10 @@ p {
                     %endfor
                 </p>
             % endif
-            % if context.get('duplicate_rut', UNDEFINED) is not UNDEFINED:
-                <p id="duplicate_rut" style="color:firebrick; margin-bottom: 15px;">
+            % if context.get('duplicate_doc_id', UNDEFINED) is not UNDEFINED:
+                <p id="duplicate_doc_id" style="color:firebrick; margin-bottom: 15px;">
                     <b>Estos ruts están duplicados en el formulario: </b></br>
-                    %for data in duplicate_rut:
+                    %for data in duplicate_doc_id:
                         ${data}</br>
                     %endfor
                 </p>
