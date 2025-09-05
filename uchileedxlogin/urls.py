@@ -7,4 +7,5 @@ urlpatterns = [
     url('callback/', EdxLoginCallback.as_view(), name='callback'),
     url('staff/$', EdxLoginStaff.as_view(), name='staff'),
     url('external/$', EdxLoginExternal.as_view(), name='external'),
+    url('data/', EdxLoginUserData.as_view(), name='data'),
 ]
