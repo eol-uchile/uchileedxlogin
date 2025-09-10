@@ -1,0 +1,30 @@
+## mako
+
+<%page expression_filter="h"/>
+<%! from django.utils.translation import ugettext as _ %>
+<%inherit file="../main.html" />
+<%block name="pagetitle">${_("Datos Usuarios")}</%block>
+<main id="main" aria-label="Content" tabindex="-1" class="static_pages">
+    <div style="text-align: center">
+        <h1 style="align-content:center; width:100%;">Exportar datos por documento de identidad</h1>
+        <form method="POST">
+           <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}"/>
+            % if context.get('invalid_doc_ids', UNDEFINED) is not UNDEFINED:
+                <p id="invalid_doc_ids" style="color:firebrick; margin-bottom: 15px;">Estos documentos de identidad están incorrectos: ${invalid_doc_ids}.</p>
+            % endif
+            % if context.get('doc_ids', UNDEFINED) is '':
+                <p id="no_doc_id" style="color:firebrick; margin-bottom: 15px;">Falta agregar algun documento de identidad.</p>
+            % endif
+            <div class="form-group" style="margin: 15px 15px;">
+                <label for="doc_ids" style="line-height: 33px; text-align: right; clear: both; margin-right: 15px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif">Documento(s) de identidad:</label>
+
+                % if context.get('doc_ids', UNDEFINED) is not UNDEFINED:
+                    <textarea style="min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" type="text" name='doc_ids' id="doc_ids" placeholder="12345678-k&#10;P12345678">${doc_ids}</textarea>                    
+                % else:
+                    <textarea style="min-width: 400px; font-style: normal; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" type="text" name='doc_ids' id="doc_ids" placeholder="12345678-k&#10;P12345678"></textarea>
+                % endif
+            </div>
+            <input type="submit" style="text-shadow: none; border-color:white; background-color: #0075b4; background-image: none; display:block; margin: auto" value="Exportar">
+        </form>
+    </div>
+</main>

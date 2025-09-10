@@ -18,7 +18,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic.base import View
@@ -761,3 +761,82 @@ class EdxLoginExternal(View):
                     return None, False
             created = True
         return edxlogin_user, created
+
+
+class EdxLoginUserData(View):
+    """
+    Gives basic information on uchile users making queries to ph, given a list of doc_ids
+    """
+    def get(self, request):
+        if check_permission_instructor_staff(request.user):
+            context = {'doc_ids': ''}
+            return render(request, 'edxlogin/userdata.html', context)
+        else:
+            raise Http404()
+
+    def post(self, request):
+        """
+        Returns a CSV with the data for the requested users.
+        """
+        if check_permission_instructor_staff(request.user):
+            doc_id_list = request.POST.get("doc_ids", "").split('\n')
+            # doc_id clean up.
+            doc_id_list = [doc_id.upper() for doc_id in doc_id_list]
+            doc_id_list = [doc_id.replace("-", "") for doc_id in doc_id_list]
+            doc_id_list = [doc_id.replace(".", "") for doc_id in doc_id_list]
+            doc_id_list = [doc_id.strip() for doc_id in doc_id_list]
+            doc_id_list = [doc_id for doc_id in doc_id_list if doc_id]
+
+            context = {
+                'doc_ids': request.POST.get('doc_ids')
+            }
+            # Data validation.
+            invalid_doc_id_list = []
+            for doc_id in doc_id_list:
+                if not validate_all_doc_id_types(doc_id):
+                    invalid_doc_id_list.append(doc_id)
+            if invalid_doc_id_list:
+                context["invalid_doc_ids"] = " - ".join(invalid_doc_id_list)
+            # Returns if there is no input or if there is an invalid doc_id.
+            if invalid_doc_id_list or not doc_id_list:
+                return render(request, 'edxlogin/userdata.html', context)
+            return self.export_data(doc_id_list)
+        else:
+            raise Http404()
+
+    def export_data(self, doc_id_list):
+        """
+        Create the CSV.
+        """
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="users.csv"'
+
+        writer = csv.writer(
+            response,
+            delimiter=';',
+            dialect='excel',
+            encoding='utf-8')
+        headers = ['Documento_id', 'Username', 'Apellido Paterno', 'Apellido Materno', 'Nombre', 'Email']
+        writer.writerow(headers)
+        for doc_id in doc_id_list:
+            while len(doc_id) < 10 and 'P' != doc_id[0] and 'CG' != doc_id[0:2]:
+                doc_id = "0" + doc_id
+            try:
+                user_data = get_user_data(doc_id, 'indiv_id')
+            except Exception:
+                user_data = {
+                'doc_id': doc_id,
+                'username': 'No Encontrado',
+                'nombres': 'No Encontrado',
+                'apellidoPaterno': 'No Encontrado',
+                'apellidoMaterno': 'No Encontrado',
+                'emails': ['No Encontrado']
+            }
+            data = [doc_id,
+                    user_data['username'],
+                    user_data['apellidoPaterno'],
+                    user_data['apellidoMaterno'],
+                    user_data['nombres']] + user_data['emails']
+            writer.writerow(data)
+        return response
+    
