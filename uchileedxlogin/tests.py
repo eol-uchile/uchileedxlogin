@@ -26,8 +26,8 @@ from xmodule.modulestore.tests.factories import CourseFactory
 # Internal project dependencies
 from .users import create_edxloginuser, create_user_by_data
 from .models import EdxLoginUserCourseRegistration, EdxLoginUser
-from .services.utils import get_document_type, validate_rut
-from .utils import generate_username, get_user_from_emails, select_email, validate_all_doc_id_types
+from .services.utils import get_document_type
+from .utils import generate_username, get_user_from_emails, select_email, validate_all_doc_id_types, validate_rut
 
 
 class TestRedirectView(TestCase):
