@@ -32,10 +32,9 @@ from openedx.core.djangoapps.user_authn.utils import is_safe_login_or_logout_red
 from .email_tasks import enroll_email
 from .ph_query import check_doc_id_have_sso, get_user_data
 from .models import EdxLoginUserCourseRegistration
-from .services.interface import check_permission_instructor_staff, edxloginuser_factory, get_doc_id_by_user_id, get_user_by_doc_id
-from .services.utils import validate_rut
-from .users import create_edxloginuser, create_edxlogin_user_by_data, create_user_by_data
-from .utils import enroll_in_course, validate_all_doc_id_types, validate_course, validate_user
+from .services.interface import edxloginuser_factory, get_doc_id_by_user_id, get_user_by_doc_id
+from .users import check_permission_instructor_staff, create_edxloginuser, create_edxlogin_user_by_data, create_user_by_data
+from .utils import enroll_in_course, validate_all_doc_id_types, validate_course, validate_rut, validate_user
 
 logger = logging.getLogger(__name__)
 regex = r'^(([^ñáéíóú<>()\[\]\.,;:\s@\"]+(\.[^ñáéíóú<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^ñáéíóú<>()[\]\.,;:\s@\"]+\.)+[^ñáéíóú<>()[\]\.,;:\s@\"]{2,})$'
@@ -769,7 +768,7 @@ class EdxLoginUserData(View):
     """
     def get(self, request):
         if check_permission_instructor_staff(request.user):
-            context = {'doc_ids': ''}
+            context = {}
             return render(request, 'edxlogin/userdata.html', context)
         else:
             raise Http404()

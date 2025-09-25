@@ -26,8 +26,8 @@ from xmodule.modulestore.tests.factories import CourseFactory
 # Internal project dependencies
 from .users import create_edxloginuser, create_user_by_data
 from .models import EdxLoginUserCourseRegistration, EdxLoginUser
-from .services.utils import get_document_type, validate_rut
-from .utils import generate_username, get_user_from_emails, select_email, validate_all_doc_id_types
+from .services.utils import get_document_type
+from .utils import generate_username, get_user_from_emails, select_email, validate_all_doc_id_types, validate_rut
 
 
 class TestRedirectView(TestCase):
@@ -2897,7 +2897,7 @@ class TestUserData(TestCase):
         response = self.client.get(reverse('uchileedxlogin-login:data'))
         request = response.request
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/data/')
+        self.assertEqual(request['PATH_INFO'], '/edxuserdata/data/')
 
     @patch('uchileedxlogin.views.check_permission_instructor_staff')
     def test_staff_get_user_anonymous(self, mock_permission_check):
@@ -2909,7 +2909,7 @@ class TestUserData(TestCase):
         response = self.client_anonymous.get(reverse('uchileedxlogin-login:data'))
         request = response.request
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/data/')
+        self.assertEqual(request['PATH_INFO'], '/edxuserdata/data/')
     
     @patch('uchileedxlogin.views.check_permission_instructor_staff')
     def test_staff_get_user_without_permission(self, mock_permission_check):
@@ -2920,7 +2920,7 @@ class TestUserData(TestCase):
         response = self.client_no_per.get(reverse('uchileedxlogin-login:data'))
         request = response.request
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/data/')
+        self.assertEqual(request['PATH_INFO'], '/edxuserdata/data/')
 
     @patch('uchileedxlogin.views.check_permission_instructor_staff')
     def test_staff_get_user_with_permission(self, mock_permission_check):       
@@ -2931,7 +2931,7 @@ class TestUserData(TestCase):
         response = self.client_user.get(reverse('uchileedxlogin-login:data'))
         request = response.request
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(request['PATH_INFO'], '/uchileedxlogin/data/')
+        self.assertEqual(request['PATH_INFO'], '/edxuserdata/data/')
 
     @patch('uchileedxlogin.views.check_permission_instructor_staff')
     @patch('requests.get')

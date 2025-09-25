@@ -3,9 +3,9 @@ from .views import *
 
 
 urlpatterns = [
-    url('login/', EdxLoginLoginRedirect.as_view(), name='login'),
-    url('callback/', EdxLoginCallback.as_view(), name='callback'),
-    url('staff/$', EdxLoginStaff.as_view(), name='staff'),
-    url('external/$', EdxLoginExternal.as_view(), name='external'),
-    url('data/', EdxLoginUserData.as_view(), name='data'),
+    url('uchileedxlogin/login/', EdxLoginLoginRedirect.as_view(), name='login'),
+    url('uchileedxlogin/callback/', EdxLoginCallback.as_view(), name='callback'),
+    url('uchileedxlogin/staff/$', EdxLoginStaff.as_view(), name='staff'),
+    url('uchileedxlogin/external/$', EdxLoginExternal.as_view(), name='external'),
+    url('edxuserdata/data/', EdxLoginUserData.as_view(), name='data'),
 ]

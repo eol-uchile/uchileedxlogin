@@ -13,7 +13,7 @@ class UchileEdxloginConfig(AppConfig):
         PluginURLs.CONFIG: {
             ProjectType.LMS: {
                 PluginURLs.NAMESPACE: "uchileedxlogin-login",
-                PluginURLs.REGEX: r"^uchileedxlogin/",
+                PluginURLs.REGEX: r"",
                 PluginURLs.RELATIVE_PATH: "urls",
             }},
         PluginSettings.CONFIG: {

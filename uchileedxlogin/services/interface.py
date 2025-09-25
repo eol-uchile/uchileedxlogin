@@ -73,15 +73,3 @@ def edxloginuser_factory(value, value_type):
     else:
         logger.warning(f"Value type {value_type} is not supported by the edxloginuser factory.")
         return None
-
-# Model permissions.
-def check_permission_instructor_staff(user):
-    """
-    Check if the user has the permission uchile_instructor_staff.
-    """
-    if not user.is_anonymous:
-        if user.has_perm('uchileedxlogin.uchile_instructor_staff') or user.is_staff:
-            return True
-        logger.error(f"Insufficient permissions, user: {user} isn't staff nor has special permission.")
-    logger.error(f"Insufficient permissions, user: {user} is anonymous.")
-    return False

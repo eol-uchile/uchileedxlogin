@@ -1,6 +1,7 @@
 # Python Standard Libraries
 import logging
 import re
+from itertools import cycle
 
 # Installed packages (via pip)
 import unidecode
@@ -16,7 +17,6 @@ from lms.djangoapps.courseware.courses import get_course_with_access
 
 # Internal project dependencies
 from uchileedxlogin.models import EdxLoginUser
-from uchileedxlogin.services.utils import validate_rut
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +79,28 @@ def enroll_in_course(user, course, enroll, mode):
             course_id=CourseKey.from_string(course),
             email=user.email,
             user=user)
+
+
+def validate_rut(rut):
+    """
+    Verify if the rut is valid.
+    """
+    rut = rut.upper()
+    rut = rut.replace("-", "")
+    rut = rut.replace(".", "")
+    rut = rut.strip()
+    aux = rut[:-1]
+    dv = rut[-1:]
+    revertido = list(map(int, reversed(str(aux))))
+    factors = cycle(list(range(2, 8)))
+    s = sum(d * f for d, f in zip(revertido, factors))
+    res = (-s) % 11
+    if str(res) == dv:
+        return True
+    elif dv == "K" and res == 10:
+        return True
+    else:
+        return False
 
 
 def validate_all_doc_id_types(doc_id):
