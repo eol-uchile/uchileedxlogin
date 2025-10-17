@@ -2,10 +2,8 @@ name: Python application
 
 on:
   push:
-    paths-ignore:
-      - '.github/workflows/**'
-    branches:
-      - 'master'
+    # branches:
+    #   - 'master'
   pull_request:
     types:
       - opened
@@ -13,12 +11,10 @@ on:
       - synchronize
     branches:
       - 'master'
-    paths-ignore:
-      - '.github/workflows/**'
 
 jobs:
   build:
-    uses: eol-uchile/workflow-commons/.github/workflows/pythonapp.yml@1.0.0
+    uses: eol-uchile/workflow-commons/.github/workflows/pythonapp.yml@356f371988e1475d231bcf8352f7875c30214602
     with:
       app_id: ${{ vars.EOLITO_BOT_APP_ID }}
       django-lms: true
