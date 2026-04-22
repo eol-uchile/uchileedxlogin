@@ -4,7 +4,7 @@ Estimada(o) ${user_name},<br><br>
 Usted ha sido inscrito en el(los) curso(s): "${courses_name}".<br>
 Para ingresar, debe dirigirse a <a href="${login_url}">${login_url}</a> y presionar el botón "Ingresa con tu cuenta mi.uchile" e ingresar su cuenta UChile.<br><br>
 
-Si tiene problemas con su contraseña, debe dirigirse a <a href="https://cuenta.uchile.cl/solicitar-recuperar-cuenta">https://cuenta.uchile.cl/solicitar-recuperar-cuenta</a>, ingresar su RUT o número pasaporte extranjero, marcar la casilla "No soy un Robot" y luego presionar el botón “Siguiente” y se le enviará un correo con la información para recuperar su contraseña.<br><br>
+Si tiene problemas con su contraseña, debe dirigirse a <a href="https://cuenta.uchile.cl/">https://cuenta.uchile.cl/</a>, seleccionar "Para Modificar Clave" o "Por Olvido de Cuenta o Clave", y seguir los pasos allí mencionados.<br><br>
 
 Si necesita ayuda o tiene alguna consulta, puede contactarse con nosotros a través de la <a href="${helpdesk_url}">Mesa de Ayuda</a>.<br><br>
 
@@ -19,7 +19,7 @@ Dear ${user_name},<br><br>
 You have been enrolled in the course(s): "${courses_name}".<br>
 To enter, please go to <a href="${login_url}">${login_url}</a>, select "Ingresa con tu cuenta mi.uchile", and enter your UChile account information.<br><br>  
 
-If you have problems with your password, please go to <a href="https://cuenta.uchile.cl/solicitar-recuperar-cuenta">https://cuenta.uchile.cl/solicitar-recuperar-cuenta</a>, enter your RUT or Passport number, and an email will be sent to you with the information to recover your password.<br><br>  
+If you have problems with your password, please go to <a href="https://cuenta.uchile.cl/">https://cuenta.uchile.cl/</a>, Select "Para Modificar Clave" or "Por Olvido de Cuenta o Clave" and follow the steps provided there.<br><br>  
 
 If you have any questions, please contact us at <a href="${helpdesk_url}">Help Desk</a>.<br><br>
 
