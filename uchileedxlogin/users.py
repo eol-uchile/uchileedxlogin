@@ -28,8 +28,7 @@ def create_user_by_data(user_data, email, password=None):
             "password": password,
             "name": user_data['nombreCompleto'],
         },
-        tos_required=False,
-        ignore_email_blacklist=True
+        tos_required=False
     )
     user, _, reg = do_create_account(form)
     reg.activate()
